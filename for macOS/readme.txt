@@ -1,4 +1,6 @@
-clienBBS for OS X 
+clienBBS for OS X ver 0.2b
+
+* 글쓰기/댓글 쓰기가 지원됩니다.
 
 # 설치
 
