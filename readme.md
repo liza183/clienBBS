@@ -10,6 +10,8 @@
 * pip install urllib3
 * pip install BeautifulSoup4
 * pip install certifi
+* pip install requests
+* pip install pyreadline
 
 ## 실행
 
