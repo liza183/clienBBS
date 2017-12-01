@@ -446,7 +446,6 @@ def read_post(bbs_title, article_num, article_data, sub_page):
         if cmd.strip()=="i":
             if img is not None:
                 display_img(img)
-            show_comment(bbs_title, article_num, article_data, sub_page)
             
         if cmd.strip()=="b":
             return
