@@ -21,8 +21,6 @@
 
 * 갑자기 떠오른 생각을 실현한거라 버그가 많을 수 있습니다
 * 재밌게 사용하셨으면 저의 유튜브 채널이나 블로그에 오셔서 피드백 주세요
-* 감사합니다
-* 매트 드림 (johnleespapa@gmail.com)
 
 ## 라이센스
 
@@ -31,6 +29,7 @@
 
 ## 링크
 
+* 개발자: 매트 (johnleespapa@gmail.com)
 * 유튜브 채널 http://youtube.com/leesinusa
 * 블로그 http://leesintheusa.com
 * 인스타그램 papamattlee
