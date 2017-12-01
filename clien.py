@@ -9,6 +9,9 @@ import getpass
 import os
 import readline
 import json
+from PIL import Image
+import urllib.request
+
 #!/usr/bin/env python
 # requests_ssl.py
 # main script
@@ -51,7 +54,16 @@ global keyword
 
 login_session = None
 logged_in_user = None
-bbs = None        
+bbs = None    
+
+def display_img(img):
+    if img is not None:
+        with urllib.request.urlopen(img) as url:
+            with open('temp.tmp', 'wb') as f:
+                f.write(url.read())
+        img = Image.open('temp.tmp')
+        img.show()
+    
 def welcome():
     global login_session
     clear_screen()
@@ -378,6 +390,10 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     
     article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
     post = article_data_soup.find("div", {"class": "post-content"}).text.strip()
+    try:
+        img = article_data_soup.find("img",{"data-role":"attach-image"})['src']
+    except:
+        img = None
 
     post_lines = post.split("\n")
     new_post_lines = []
@@ -408,16 +424,30 @@ def read_post(bbs_title, article_num, article_data, sub_page):
             else:
                 print(" -- 글의 마지막입니다. -- "+str(comment_no) + " 개의 댓글이 달렸습니다.")
         show_lower()
-        if (page+1)!=int(max_page):
-            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (b) 뒤로 가기 (r) 댓글 달기 (q) 종료 하기 >> "
-        elif str(comment_no).strip()!="":
-            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (b) 뒤로가기 (r) 댓글 달기 (q) 종료 하기 >> "
+        if img is None:
+            if (page+1)!=int(max_page):
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (b) 뒤로 가기 (r) 댓글 달기 (q) 종료 하기 >> "
+            elif str(comment_no).strip()!="":
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (b) 뒤로가기 (r) 댓글 달기 (q) 종료 하기 >> "
+            else:
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (r) 댓글 달기 (q) 종료 하기 >> "
         else:
-            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (r) 댓글 달기 (q) 종료 하기 >> "
-
+            if (page+1)!=int(max_page):
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (i) 첨부 이미지 보기 (b) 뒤로 가기 (r) 댓글 달기 (q) 종료 하기 >> "
+            elif str(comment_no).strip()!="":
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (i) 첨부 이미지 보기 (b) 뒤로가기 (r) 댓글 달기 (q) 종료 하기 >> "
+            else:
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (i) 첨부 이미지 보기 (r) 댓글 달기 (q) 종료 하기 >> "
         cmd = input(cmd_list)
+        
         if (page+1)==int(max_page) and cmd.strip()=="" and str(comment_no).strip()!="":
             show_comment(bbs_title, article_num, article_data, sub_page)
+    
+        if cmd.strip()=="i":
+            if img is not None:
+                display_img(img)
+            show_comment(bbs_title, article_num, article_data, sub_page)
+            
         if cmd.strip()=="b":
             return
         if cmd.strip()=="q":
