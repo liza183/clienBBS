@@ -5,6 +5,12 @@ clienBBS for OS X
 Python 3를 설치하여 주십시오.
 https://www.python.org/download/releases/3.0/
 
+# 관련 모듈을 설치해주세요
+
+pip install urllib3
+pip install BeautifulSoup4
+pip install certifi
+
 # 실행
 
 python clien.py 로 실행해주시면 됩니다.
