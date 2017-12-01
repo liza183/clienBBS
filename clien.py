@@ -473,9 +473,16 @@ def get_list(bbs="m",page=0, keyword=None):
                 page_data = Soup(requests.get(url, verify=cert_path).text, 'lxml')
                 list_article = page_data.findAll("div", {"class": "list-row symph-row"})
                 for item in list_article:
-                    category = item.div.find("div",{"class":"list-title"}).a.span.text.strip()
+                    try:
+                        category = item.div.find("div",{"class":"list-title"}).a.span.text.strip()
+                    except:
+                        category = ""
                     title = item.div.find("div",{"class":"list-title"}).a.text.strip().replace(category,"").strip()
-                    comment_no = item.div.find("div",{"class":"list-title"}).findAll("span")[1].text
+                    try:
+                        comment_no = item.div.find("div",{"class":"list-title"}).findAll("span")[1].text
+                    except:
+                        comment_no = item.div.find("div",{"class":"list-title"}).find("span").text
+
                     hits = item.div.find("div",{"class":"list-hit"}).text.strip()
                     link = item.div.find("div",{"class":"list-title"}).a['href'].strip()
                     author = item['data-author-id'].strip()
@@ -541,30 +548,44 @@ def cmd_line():
             bbs = cmd.strip()
             
             if cmd.strip()=="m":
+                page = 0
+                keyword = None
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
                 bbs_title = "* [모두의 공원]"
             
             if cmd.strip()=="n":
+                page = 0
+                keyword = None
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
                 bbs_title = "* [새소식]"
 
             if cmd.strip()=="t":
+                page = 0
+                keyword = None
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
                 bbs_title = "* [팁/강좌]"
 
             if cmd.strip()=="j":
+                page = 0
+                keyword = None
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
                 bbs_title = "* [알뜰 구매]"
             
             if cmd.strip()=="u":
+                page = 0
+                keyword = None
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
                 bbs_title = "* [사용기]"
             
             if cmd.strip()=="b":
+                page = 0
+                keyword = None
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
                 bbs_title = "* [회원 중고장터]"
             
             if cmd.strip()=="a":
+                page = 0
+                keyword = None
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
                 bbs_title = "* [아무거나 질문]"
 
