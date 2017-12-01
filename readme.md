@@ -1,4 +1,4 @@
-# clienBBS ver 0.2b
+# clienBBS ver 0.2c
 
 ## 설치
 
@@ -12,6 +12,8 @@
 * pip install certifi
 * pip install requests
 * pip install pyreadline
+* pip install lxml
+* pip install image
 
 ## 실행
 
