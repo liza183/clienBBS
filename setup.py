@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='clienBBS',
-    version='1.0.0',
+    version='0.2',
     description='Retro-feeling BBS interface for Clien',
     long_description='',  # RestructuredText 문자열 넣으면 pypi.org 프로젝트 페이지에 표시
     url='https://github.com/liza183/clienBBS',
