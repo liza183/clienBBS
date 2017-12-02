@@ -8,7 +8,7 @@ setup(
     long_description='',  # RestructuredText 문자열 넣으면 pypi.org 프로젝트 페이지에 표시
     url='https://github.com/liza183/clienBBS',
     author='Matt Sangkeun Lee',
-    author_email='Matt Sangkeun Lee',
+    author_email='johnleespapa@gmail.com',
     license='Private',  # 알맞게 고쳐주세요!
     classifiers=[
         'Programming Language :: Python',
