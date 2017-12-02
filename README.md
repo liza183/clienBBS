@@ -2,25 +2,25 @@
 
 ## 설치
 
-* Python 3를 설치하여 주십시오.
-* https://www.python.org/download/releases/3.0/
+* Python 3 최신버전을 설치하여 주십시오.
+* https://www.python.org/download/releases/3.6/
 
 ## 관련 모듈을 설치해주세요
 
-* pip install urllib3
-* pip install BeautifulSoup4
-* pip install certifi
-* pip install requests
-* pip install pyreadline
-* pip install lxml
-* pip install image
+이 저장소를 클론하시거나 다운로드하신 후,
+
+```sh
+pip install -e .
+```
+
+를 실행해주세요.
 
 ## 실행
 
-* 터미널에서 python clien.py 로 실행해주시면 됩니다.
+* 터미널에서 `clien` 명령으로 실행해주시면 됩니다.
 * 터미널에서 실행되므로 터미널 색상을 잘 조정해주세요.
 * 좋은 테마 세팅이 있으시면 공유해주세요!!!
-* macOS에서는 첨부된 set_colors_bw.sh 또는 set_colors_gb.sh을 
+* macOS에서는 첨부된 `set_colors_bw.sh` 또는 `set_colors_gb.sh`을 
   터미널에서 실행하시면, 색상을 쉽게 바꾸실 수 있습니다.
 
 ## 부탁

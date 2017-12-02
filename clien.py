@@ -705,7 +705,11 @@ def cmd_line():
             if cmd.strip()=="c":
                 clear_screen()
 
-if __name__=="__main__":
-    
+
+def main():
     welcome()
     cmd_line()
+
+
+if __name__=="__main__":
+    main()
