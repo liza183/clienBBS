@@ -480,13 +480,12 @@ def get_list(bbs="m",page=0, keyword=None):
         if bbs =="a":
             url = qna_url
         
-        url = url+str(page)
-        if keyword is not None:
-            url+="&sk=title&sv="+keyword
-        
         if bbs =="m" or bbs == "n":
             for page in (page*2,page*2+1):
-                page_data = Soup(requests.get(url, verify=cert_path).text, 'lxml')
+                new_url = url+str(page)
+                if keyword is not None:
+                    new_url+="&sk=title&sv="+keyword
+                page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 list_article = page_data.findAll("div", {"class": "list-row symph-row"})
                 for item in list_article:
                     title = item.div.find("div",{"class":"list-title"}).a.text.strip()
@@ -499,7 +498,10 @@ def get_list(bbs="m",page=0, keyword=None):
 
         if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a":
             for page in (page*2,page*2+1):
-                page_data = Soup(requests.get(url, verify=cert_path).text, 'lxml')
+                new_url = url+str(page)
+                if keyword is not None:
+                    new_url+="&sk=title&sv="+keyword
+                page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 list_article = page_data.findAll("div", {"class": "list-row symph-row"})
                 for item in list_article:
                     try:
