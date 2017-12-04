@@ -404,17 +404,17 @@ def read_post(bbs_title, article_num, article_data, sub_page):
         print("\n물품 정보")
         seller_info = article_data_soup.find("div", {"class": "market-product"})
         items = seller_info.find_all("li")[:5]
+        seller_contact = article_data_soup.find("table", {"class": "seller-contact"})
         for item in items:
             cat = item.find("span")
             print(cat.text + " : " + item.text.replace(cat.text, ''))
-        if login_session != None:
-            seller_contact = article_data_soup.find("table", {"class": "seller-contact"})
+        if login_session != None or seller_contact == None:
             rows = seller_contact.find_all("tr")
             print("\n판매자 정보")
             for row in rows:
                 print(row.find("th").text + " : " + row.find("td").text)
         else:
-            print("\n판매자 정보는 로그인하셔야 볼 수 있습니다.")
+            print("\n판매자 정보는 가입 한 상태에서 15일이 지나야 볼 수 있습니다.")
 
     post_lines = post.split("\n")
     new_post_lines = []
