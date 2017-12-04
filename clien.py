@@ -388,12 +388,33 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     timestamp = article_data[sub_page*20+article_num][4]
     comment_no = article_data[sub_page*20+article_num][5]
     
-    article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
+    board_type = article_url.split("/")[-2]
+    
+    if login_session != None and board_type == "sold":
+        article_data_soup = Soup(login_session.get(article_url,verify=cert_path).text, 'lxml')
+    else:
+        article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
     post = article_data_soup.find("div", {"class": "post-content"}).text.strip()
     try:
         img = article_data_soup.find("img",{"data-role":"attach-image"})['src']
     except:
         img = None
+
+    if board_type == "sold":
+        print("\n물품 정보")
+        seller_info = article_data_soup.find("div", {"class": "market-product"})
+        items = seller_info.find_all("li")[:5]
+        for item in items:
+            cat = item.find("span")
+            print(cat.text + " : " + item.text.replace(cat.text, ''))
+        if login_session != None:
+            seller_contact = article_data_soup.find("table", {"class": "seller-contact"})
+            rows = seller_contact.find_all("tr")
+            print("\n판매자 정보")
+            for row in rows:
+                print(row.find("th").text + " : " + row.find("td").text)
+        else:
+            print("\n판매자 정보는 로그인하셔야 볼 수 있습니다.")
 
     post_lines = post.split("\n")
     new_post_lines = []
