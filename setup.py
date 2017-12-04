@@ -3,9 +3,9 @@ from setuptools import setup
 
 setup(
     name='clienBBS',
-    version='0.2',
-    description='Retro-feeling BBS interface for Clien',
-    long_description='',  # RestructuredText 문자열 넣으면 pypi.org 프로젝트 페이지에 표시
+    version='0.22',
+    description='clienBBS: Retro-style BBS interface for the Clien.net community',
+    long_description='',
     url='https://github.com/liza183/clienBBS',
     author='Matt Sangkeun Lee',
     author_email='johnleespapa@gmail.com',
