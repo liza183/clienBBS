@@ -401,20 +401,24 @@ def read_post(bbs_title, article_num, article_data, sub_page):
         img = None
 
     if board_type == "sold":
-        print("\n물품 정보")
+        item_info = ""
+        item_info+= "\n물품 정보"
         seller_info = article_data_soup.find("div", {"class": "market-product"})
         items = seller_info.find_all("li")[:5]
         seller_contact = article_data_soup.find("table", {"class": "seller-contact"})
         for item in items:
             cat = item.find("span")
-            print(cat.text + " : " + item.text.replace(cat.text, ''))
+            item_info+= cat.text + " : " + item.text.replace(cat.text, '')+"\n"
         if login_session != None or seller_contact == None:
-            rows = seller_contact.find_all("tr")
-            print("\n판매자 정보")
-            for row in rows:
-                print(row.find("th").text + " : " + row.find("td").text)
+            try:
+                rows = seller_contact.find_all("tr")
+                item_info+="\n판매자 정보"
+                for row in rows:
+                    item_info+=row.find("th").text + " : " + row.find("td").text +"\n"
+            except:
+                pass
         else:
-            print("\n판매자 정보는 가입 한 상태에서 15일이 지나야 볼 수 있습니다.")
+            item_info+="\n판매자 정보는 가입 한 상태에서 15일이 지나야 볼 수 있습니다."
 
     post_lines = post.split("\n")
     new_post_lines = []
@@ -428,15 +432,24 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     max_page = (len(post_lines)/10)+1
     for i in range(0,((int(max_page) *10)-len(post_lines))):
         post_lines.append("\n")
-    
-    for page in range(0, int(max_page)):
+
+    if board_type == "sold":
+        start_page = -1
+    else:
+        start_page = 0
+    for page in range(start_page, int(max_page)):
         clear_screen()
         show_header()
         print(bbs_title, "제목:'", title+"'", "글쓴이: ",author)
         print("__________________________________________________________________________________________________________________________________________")
         print("")
-        for line in post_lines[page*10:page*10+10]:
-            print(" "+line.strip()+"\n")
+        
+
+        if board_type == "sold" and page==-1:
+            print(item_info)
+        else:    
+            for line in post_lines[page*10:page*10+10]:
+                print(" "+line.strip()+"\n")
         if (page+1)!=int(max_page):
             print(" (계속...) ")
         else:
