@@ -1,11 +1,21 @@
-# clienBBS ver 0.2c
+# clienBBS ver 0.22b
+
+## 알림 ver 0.22b
+
+장터 판매자/상품 정보 보기 추가 되었습니다. (thy2134 님 감사합니다.)
+소소한 버그 수정이 있었습니다
 
 ## 설치
 
 * Python 3 최신버전을 설치하여 주십시오.
 * https://www.python.org/download/releases/3.6/
 
-## 관련 모듈을 설치해주세요
+## 쉬운 설치
+```sh
+pip install clienBBS
+```
+
+## 혹은
 
 이 저장소를 클론하시거나 다운로드하신 후,
 

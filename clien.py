@@ -92,9 +92,9 @@ l  `  '  !|   [_ |     T/   \_ |     ||   |   ||   [_       |  |  |     |
 l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___                    
   |  |  |   [_ |    \ |   |   | |  | |  |  ||  _  ||     T                   
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
-  l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clien-BBS)  
+  l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.2b
+  VER 0.22b
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
   [보다 쾌적한 사용을 위해 터미널의 상하,좌우폭을 조절해주세요]
 __________________________________________________________________________________________________________________________________________
@@ -132,7 +132,7 @@ def show_top_menu():
 l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___                    
   |  |  |   [_ |    \ |   |   | |  | |  |  ||  _  ||     T                   
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
-  l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (beta)  
+  l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j     
 
 * 재미있게 사용하셨다면 유튜브 '이씨네 미국살이 (https://goo.gl/FbhCa7)' 를 방문해주세요.
 * 인스타그램 @papamattlee 를 팔로우해주세요
@@ -388,12 +388,37 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     timestamp = article_data[sub_page*20+article_num][4]
     comment_no = article_data[sub_page*20+article_num][5]
     
-    article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
+    board_type = article_url.split("/")[-2]
+    
+    if login_session != None and board_type == "sold":
+        article_data_soup = Soup(login_session.get(article_url,verify=cert_path).text, 'lxml')
+    else:
+        article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
     post = article_data_soup.find("div", {"class": "post-content"}).text.strip()
     try:
         img = article_data_soup.find("img",{"data-role":"attach-image"})['src']
     except:
         img = None
+
+    if board_type == "sold":
+        item_info = ""
+        item_info+= "\n물품 정보"
+        seller_info = article_data_soup.find("div", {"class": "market-product"})
+        items = seller_info.find_all("li")[:5]
+        seller_contact = article_data_soup.find("table", {"class": "seller-contact"})
+        for item in items:
+            cat = item.find("span")
+            item_info+= cat.text + " : " + item.text.replace(cat.text, '')+"\n"
+        if login_session != None or seller_contact == None:
+            try:
+                rows = seller_contact.find_all("tr")
+                item_info+="\n판매자 정보"
+                for row in rows:
+                    item_info+=row.find("th").text + " : " + row.find("td").text +"\n"
+            except:
+                pass
+        else:
+            item_info+="\n판매자 정보는 가입 한 상태에서 15일이 지나야 볼 수 있습니다."
 
     post_lines = post.split("\n")
     new_post_lines = []
@@ -407,15 +432,24 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     max_page = (len(post_lines)/10)+1
     for i in range(0,((int(max_page) *10)-len(post_lines))):
         post_lines.append("\n")
-    
-    for page in range(0, int(max_page)):
+
+    if board_type == "sold":
+        start_page = -1
+    else:
+        start_page = 0
+    for page in range(start_page, int(max_page)):
         clear_screen()
         show_header()
         print(bbs_title, "제목:'", title+"'", "글쓴이: ",author)
         print("__________________________________________________________________________________________________________________________________________")
         print("")
-        for line in post_lines[page*10:page*10+10]:
-            print(" "+line.strip()+"\n")
+        
+
+        if board_type == "sold" and page==-1:
+            print(item_info)
+        else:    
+            for line in post_lines[page*10:page*10+10]:
+                print(" "+line.strip()+"\n")
         if (page+1)!=int(max_page):
             print(" (계속...) ")
         else:
@@ -661,7 +695,7 @@ def cmd_line():
             
             try:
                 article_num = int(cmd)
-                if article_num>=0 and article_num<20:
+                if article_num>=0 and article_num<len(article_data):
                     cmd = "read"                    
             except:
                 pass
