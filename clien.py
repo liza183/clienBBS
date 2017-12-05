@@ -445,8 +445,13 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     
         if cmd.strip()=="i":
             if img is not None:
-                display_img(img)
-            
+                try:
+                    display_img(img)
+                except:
+                    print("현재 환경에서는 지원되지 않습니다.")
+
+            page = max_page - 1
+            show_comment(bbs_title, article_num, article_data, sub_page)
         if cmd.strip()=="b":
             return
         if cmd.strip()=="q":
