@@ -107,7 +107,8 @@ ________________________________________________________________________________
         if cmd.strip()=="":
             break
         if cmd.strip()=="q":
-            sys.exit()
+            print("")
+            print("안녕히 가십시오. ")
         if cmd.strip()=="l":
             login_session = login()
             if login_session is not None:
@@ -768,6 +769,8 @@ def cmd_line():
                     sub_page=0
                     article_data = get_list(bbs=bbs,page=page,keyword=keyword)
             if cmd.strip()=="q":
+                print("")
+                print("안녕히 가십시오. ")
                 sys.exit()
             if cmd.strip()=="c":
                 clear_screen()
