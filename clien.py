@@ -109,6 +109,7 @@ ________________________________________________________________________________
         if cmd.strip()=="q":
             print("")
             print("안녕히 가십시오. ")
+            print("")
         if cmd.strip()=="l":
             login_session = login()
             if login_session is not None:
@@ -771,6 +772,7 @@ def cmd_line():
             if cmd.strip()=="q":
                 print("")
                 print("안녕히 가십시오. ")
+                print("")
                 sys.exit()
             if cmd.strip()=="c":
                 clear_screen()
