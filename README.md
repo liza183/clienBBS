@@ -1,18 +1,21 @@
-# clienBBS ver 0.22b
+# clienBBS ver 0.23
 
-## 알림 ver 0.22b
+## 알림 ver 0.23
 
-장터 판매자/상품 정보 보기 추가 되었습니다. (thy2134 님 감사합니다.)
+대댓글 표시를 보기좋게 바꿨습니다. (탭추가) (BEA-Utiful 님 감사합니다)
 소소한 버그 수정이 있었습니다
 
 ## 설치
 
 * Python 3 최신버전을 설치하여 주십시오.
 * https://www.python.org/download/releases/3.6/
+* 윈도우에서 pip 가 안되거나 문제가 발생하시면 http://wlsufld.tistory.com/17 를 참고해주세요 
 
 ## 쉬운 설치
 ```sh
 pip install clienBBS
+(안되면 pip3 install clienBBS)
+
 ```
 
 ## 혹은
@@ -27,6 +30,7 @@ pip install -e .
 
 ## 실행
 
+* 폰트는 무료폰트인 D2Coding을 추천드립니다.
 * 터미널에서 `clien` 명령으로 실행해주시면 됩니다.
 * 터미널에서 실행되므로 터미널 색상을 잘 조정해주세요.
 * 좋은 테마 세팅이 있으시면 공유해주세요!!!
