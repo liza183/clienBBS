@@ -216,9 +216,11 @@ def reply(bbs_title, article_num, article_data, sub_page):
                 break
             else:
                 lines.append(line)
-        lines.append(" - clienBBS 로 작성한 댓글입니다.")
+        lines.append("<br> - clienBBS 로 작성한 댓글입니다.")
         content = ""
         for line in lines:
+            if line.strip()=="":
+                line="<br>"
             content+="<p>"+line+"</p>"
 
         headers = {'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
@@ -261,9 +263,11 @@ def write(bbs_title):
                 break
             else:
                 lines.append(line)
-        lines.append(" - clienBBS 로 작성한 글입니다.")
+        lines.append("<br> - clienBBS 로 작성한 글입니다.")
         content = ""
         for line in lines:
+            if line.strip()=="":
+                line="<br>"
             content+="<p>"+line+"</p>"
         
         params ="{\"commentAlarmYn\": true, \"content\": \""+content+"\", \"files\": [], \"images\": [], \"imageLocation\": \"IN\", \"htmlYn\": true, \"subject\": \""+title+"\", \"ccl\": \"\", \"source\": \"\"}"
@@ -504,6 +508,7 @@ def read_post(bbs_title, article_num, article_data, sub_page):
             show_comment(bbs_title, article_num, article_data, sub_page)
         
 def get_list(bbs="m",page=0, keyword=None):
+        global login_session
         data = []
         
         if bbs=="m":
@@ -532,7 +537,10 @@ def get_list(bbs="m",page=0, keyword=None):
                 new_url = url+str(page)
                 if keyword is not None:
                     new_url+="&sk=title&sv="+keyword
-                page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
+                if login_session is not None:
+                    page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
+                else:
+                    page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 list_article = page_data.findAll("div", {"class": "list-row symph-row"})
                 for item in list_article:
                     title = item.div.find("div",{"class":"list-title"}).a.text.strip()
@@ -548,7 +556,10 @@ def get_list(bbs="m",page=0, keyword=None):
                 new_url = url+str(page)
                 if keyword is not None:
                     new_url+="&sk=title&sv="+keyword
-                page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
+                if login_session is not None:
+                    page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
+                else:
+                    page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 list_article = page_data.findAll("div", {"class": "list-row symph-row"})
                 for item in list_article:
                     try:
@@ -595,7 +606,7 @@ def login():
             else:
                 print ('로그인이 되지 않았어요! 아이디와 비밀번호를 다시한번 확인해 주세요.')
 
-    print(" 로그인을 할수 없습니다. ")
+    print("로그인을 할수 없습니다. ")
     return None
 
 
@@ -711,14 +722,21 @@ def cmd_line():
                 read_post(bbs_title, article_num, article_data, sub_page)
             
             if cmd=="s":
+                if login_session is None:
+                    print("\n글을 검색하시려면 로그인 하셔야 합니다.")
+                    login_session = login()
                 
-                keyword = input(" 검색어를 입력하세요 >")
-                keyword = keyword.replace(" ","%20")
-                if keyword.strip()=="":
-                    keyword = None
-                page = 0
-                sub_page = 0
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                if login_session is None:
+                    input('로그인 하시지 않으면 검색 하실 수 없습니다. (엔터) 계속')
+                else:
+                    keyword = input("\n검색어를 입력하세요 (빈검색어=전체글 보기) >> ")
+                    keyword = keyword.replace(" ","%20")
+                    if keyword.strip()=="":
+                        keyword = None
+
+                    page = 0
+                    sub_page = 0
+                    article_data = get_list(bbs=bbs,page=page,keyword=keyword)
 
             if cmd=="w":
                 write(bbs_title)
