@@ -110,6 +110,7 @@ ________________________________________________________________________________
             print("")
             print("안녕히 가십시오. ")
             print("")
+            sys.exit()
         if cmd.strip()=="l":
             login_session = login()
             if login_session is not None:
@@ -731,7 +732,7 @@ def cmd_line():
                 if login_session is None:
                     input('로그인 하시지 않으면 검색 하실 수 없습니다. (엔터) 계속')
                 else:
-                    keyword = input("\n검색어를 입력하세요 (빈검색어=전체글 보기) >> ")
+                    keyword = input("\n검색어를 입력하세요 (빈 검색어=전체글 보기) >> ")
                     keyword = keyword.replace(" ","%20")
                     if keyword.strip()=="":
                         keyword = None
