@@ -336,6 +336,8 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
             try:
                 comment = item['comment']
                 username = item['member']['userId']
+                re_comment_sn = item['reCommentSn']
+                comment_sn = item['commentSn']
                 l = comment.replace("\n"," ").split(" ")
                 n = 10
                 lines = [' '.join(l[x:x+n]) for x in range(0, len(l), n)]
@@ -346,10 +348,16 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
                         line = "\""+line
                     if idx==len(lines)-1:
                         line = line+"\""
-                    print("\t"+line.strip())
+                    if re_comment_sn!=comment_sn:
+                        print("\t\t"+line.strip())
+                    else:
+                        print("\t"+line.strip())
                     idx+=1
 
-                print("\t(by "+username+")")
+                if re_comment_sn!=comment_sn:
+                    print("\t\t(by "+username+")")
+                else:
+                    print("\t(by "+username+")")
                 print("")
             except:
                 print("")
