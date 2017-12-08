@@ -85,6 +85,7 @@ def chat_client():
     except :
         print('clienBBS의 채팅 서버가 준비되지 않은 상태입니다.')
         print('잠시 후 다시 시도해 보세요')
+        cm = input("(엔터) 계속 .. ")
         return
      
     print('서버에 접속하였습니다. 즐거운 시간 되세요..\n')
