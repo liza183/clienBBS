@@ -56,6 +56,85 @@ login_session = None
 logged_in_user = None
 bbs = None    
 
+import sys
+import socket
+import select
+import readline
+
+def chat_client():
+    global login_session
+    global logged_in_user
+    if login_session is None:
+        print("\n채팅에 참여 하시려면 로그인 하셔야 합니다.")
+        login_session = login()
+    
+    if login_session is None:
+        input('로그인 하시지 않으면 대화에 참여하실 수 없습니다. (엔터) 계속')
+        return
+
+    nick = input("\n채팅에 사용할 별명을 입력하세요: ")
+    host = 'localhost'
+    port = 9009
+     
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(2)
+     
+    # connect to remote host
+    try :
+        s.connect((host, port))
+    except :
+        print('clienBBS의 채팅 서버가 준비되지 않은 상태입니다.')
+        print('잠시 후 다시 시도해 보세요')
+        return
+     
+    print('서버에 접속하였습니다. 즐거운 시간 되세요..\n')
+    print('대화를 마치시려면 **를 입력하세요. **who 를 입력하시면 현재 참여 인원을 보실 수 있습니다. \n')
+    
+    msg = bytes('**cmd**:enter:'+nick+' ('+logged_in_user+')',"utf-8")
+    s.send(msg)
+
+    sys.stdout.write('['+nick+'('+logged_in_user+')] '); sys.stdout.flush()
+
+    while 1:
+        
+        socket_list = [sys.stdin, s]
+        
+        # Get the list sockets which are readable
+        ready_to_read,ready_to_write,in_error = select.select(socket_list , [], [])
+        erase = '\x1b[1A\x1b[2K'
+        for sock in ready_to_read:             
+            if sock == s:
+                # incoming message from remote server, s
+                data = sock.recv(4096)
+                data = data.decode("utf-8")
+                if not data :
+                    print('\nDisconnected from chat server')
+                    return
+                else :
+                    print(erase)
+                    sys.stdout.write(data.strip()+"\n\n["+nick+' ('+logged_in_user+')] ')
+                    sys.stdout.flush()          
+            else :
+                msg = input("")
+                
+                if msg.strip()=="**who":
+                    print("**who 받음")
+                    msg = bytes("**cmd**:who:","utf-8")
+                    s.send(msg)
+
+                elif msg.strip()=="**":
+                    print(" 안녕히 계세요 ")
+                    msg = bytes('**cmd**:quit:'+nick+' ('+logged_in_user+')',"utf-8")
+                    s.send(msg)
+                    return
+                else:
+                    print(erase)
+
+                    msg = bytes('['+nick+' ('+logged_in_user+')] '+msg,"utf-8")
+                    s.send(msg)
+                    sys.stdout.write('['+nick+' ('+logged_in_user+')] '); sys.stdout.flush() 
+
+
 def display_img(img):
     if img is not None:
         with urllib.request.urlopen(img) as url:
@@ -63,7 +142,8 @@ def display_img(img):
                 f.write(url.read())
         img = Image.open('temp.tmp')
         img.show()
-    
+
+		
 def welcome():
     global login_session
     clear_screen()
@@ -94,7 +174,7 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.23
+  VER 0.24
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
   [보다 쾌적한 사용을 위해 터미널의 상하,좌우폭을 조절해주세요]
 __________________________________________________________________________________________________________________________________________
@@ -145,7 +225,7 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
  (m) 모두의 공원	(u) 사용기
  (n) 새소식		(b) 회원중고장터
  (t) 팁/강좌		(a) 아무거나 질문
- (j) 알뜰 구매 
+ (j) 알뜰 구매		(c) 대화의 공원 (채팅방)
 __________________________________________________________________________________________________________________________________________
 
   """
@@ -639,6 +719,9 @@ def cmd_line():
             cmd = input(cmd_list)
             bbs = cmd.strip()
             
+            if cmd.strip()=="c":
+                chat_client()
+
             if cmd.strip()=="m":
                 page = 0
                 keyword = None
@@ -725,12 +808,14 @@ def cmd_line():
                 read_post(bbs_title, article_num, article_data, sub_page)
             
             if cmd=="s":
+                
                 if login_session is None:
                     print("\n글을 검색하시려면 로그인 하셔야 합니다.")
                     login_session = login()
                 
                 if login_session is None:
                     input('로그인 하시지 않으면 검색 하실 수 없습니다. (엔터) 계속')
+                
                 else:
                     keyword = input("\n검색어를 입력하세요 (빈 검색어=전체글 보기) >> ")
                     keyword = keyword.replace(" ","%20")
