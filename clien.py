@@ -73,7 +73,7 @@ def chat_client():
         return
 
     nick = input("\n채팅에 사용할 별명을 입력하세요: ")
-    host = 'localhost'
+    host = '45.55.183.136'
     port = 9009
      
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
