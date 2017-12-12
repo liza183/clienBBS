@@ -406,8 +406,9 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
     hits = article_data[sub_page*20+article_num][3]
     timestamp = article_data[sub_page*20+article_num][4]
     comment_url = "https://www.clien.net/service/api/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment?param={\"order\":\"date\",\"po\":0,\"ps\":100}"
+    print(comment_url)
     outage_json = requests.get(comment_url,verify=cert_path).json()
-
+    print(outage_json)
     idx = 0
     clear_screen()
     show_header()
@@ -490,7 +491,9 @@ def read_post(bbs_title, article_num, article_data, sub_page):
         article_data_soup = Soup(login_session.get(article_url,verify=cert_path).text, 'lxml')
     else:
         article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
-    post = article_data_soup.find("div", {"class": "post-content"}).text.strip()
+    
+    print(article_data_soup)
+    post = article_data_soup.find("div", {"class": "post_content"}).text.strip()
     try:
         img = article_data_soup.find("img",{"data-role":"attach-image"})['src']
     except:
@@ -499,9 +502,9 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     if board_type == "sold":
         item_info = ""
         item_info+= "\n물품 정보"
-        seller_info = article_data_soup.find("div", {"class": "market-product"})
+        seller_info = article_data_soup.find("div", {"class": "market_product"})
         items = seller_info.find_all("li")[:5]
-        seller_contact = article_data_soup.find("table", {"class": "seller-contact"})
+        seller_contact = article_data_soup.find("table", {"class": "seller_contact"})
         for item in items:
             cat = item.find("span")
             item_info+= cat.text + " : " + item.text.replace(cat.text, '')+"\n"
@@ -625,14 +628,15 @@ def get_list(bbs="m",page=0, keyword=None):
                     page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
-                list_article = page_data.findAll("div", {"class": "list-row symph-row"})
+                
+                list_article = page_data.findAll("div", {"class": "list_item symph_row"})
                 for item in list_article:
-                    title = item.div.find("div",{"class":"list-title"}).a.text.strip()
-                    comment_no = item.div.find("div",{"class":"list-title"}).find("span").text
-                    hits = item.div.find("div",{"class":"list-hit"}).text.strip()
-                    link = item.div.find("div",{"class":"list-title"}).a['href'].strip()
+                    title = item.findAll("span")[1].text
+                    comment_no = item.findAll("span")[2].text
+                    hits = item.findAll("div")[3].span.text
+                    link = item.find("a",{"class":"list_subject"})['href']
                     author = item['data-author-id'].strip()
-                    timestamp = item.div.find("div",{"class":"list-time"}).span.span.text.strip()
+                    timestamp = item.find("div",{"class":"list_time"}).span.span.text
                     data.append((title,author,link,hits,timestamp,comment_no))
 
         if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a":
@@ -644,22 +648,22 @@ def get_list(bbs="m",page=0, keyword=None):
                     page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
-                list_article = page_data.findAll("div", {"class": "list-row symph-row"})
+                list_article = page_data.findAll("div", {"class": "list_item symph_row"})
                 for item in list_article:
                     try:
-                        category = item.div.find("div",{"class":"list-title"}).a.span.text.strip()
+                        category = item.find("div",{"class":"list_title"}).findAll("span")[0].text.strip()
                     except:
                         category = ""
-                    title = item.div.find("div",{"class":"list-title"}).a.text.strip().replace(category,"").strip()
+                    title = item.find("div",{"class":"list_title"}).findAll("span")[1].text.strip()
                     try:
-                        comment_no = item.div.find("div",{"class":"list-title"}).findAll("span")[1].text
+                        comment_no = item.find("span",{"class":"rSymph05"}).text
                     except:
-                        comment_no = item.div.find("div",{"class":"list-title"}).find("span").text
+                        comment_no = ""
 
-                    hits = item.div.find("div",{"class":"list-hit"}).text.strip()
-                    link = item.div.find("div",{"class":"list-title"}).a['href'].strip()
+                    hits = item.findAll("div")[3].span.text
+                    link = item.find("a",{"class":"list_subject"})['href']
                     author = item['data-author-id'].strip()
-                    timestamp = item.div.find("div",{"class":"list-time"}).span.span.text.strip()
+                    timestamp = item.find("div",{"class":"list_time"}).span.span.text
                     data.append((title,author,link,hits,timestamp,comment_no))
         return data
 
@@ -726,43 +730,43 @@ def cmd_line():
             if cmd.strip()=="m":
                 page = 0
                 keyword = None
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [모두의 공원]"
             
             if cmd.strip()=="n":
                 page = 0
                 keyword = None
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [새소식]"
 
             if cmd.strip()=="t":
                 page = 0
                 keyword = None
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [팁/강좌]"
 
             if cmd.strip()=="j":
                 page = 0
                 keyword = None
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [알뜰 구매]"
             
             if cmd.strip()=="u":
                 page = 0
                 keyword = None
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [사용기]"
             
             if cmd.strip()=="b":
                 page = 0
                 keyword = None
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [회원 중고장터]"
             
             if cmd.strip()=="a":
                 page = 0
                 keyword = None
-                article_data = get_list(bbs=bbs,page=page,keyword=keyword)
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [아무거나 질문]"
 
             if cmd.strip()=="q":
