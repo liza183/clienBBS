@@ -175,7 +175,11 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.25
+  VER 0.30 (12/13/2017)
+  
+  [공지] 새로운 클리앙 개편에 맞추어 업데이트 되었습니다!
+  [공지] 간단한 채팅방 기능을 추가했습니다!
+
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
   [보다 쾌적한 사용을 위해 터미널의 상하,좌우폭을 조절해주세요]
 __________________________________________________________________________________________________________________________________________
@@ -405,27 +409,45 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
     author = article_data[sub_page*20+article_num][1]
     hits = article_data[sub_page*20+article_num][3]
     timestamp = article_data[sub_page*20+article_num][4]
-    comment_url = "https://www.clien.net/service/api/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment?param={\"order\":\"date\",\"po\":0,\"ps\":100}"
-    print(comment_url)
-    outage_json = requests.get(comment_url,verify=cert_path).json()
-    print(outage_json)
+    comment_url = "https://www.clien.net/service/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment?data={\"order\":\"date\",\"po\":0,\"ps\":100,\"writer\":\"\"}"
+    comment_data = requests.get(comment_url,verify=cert_path).text
+    comment_data_soup = Soup(comment_data, 'lxml')
+    comment_row = comment_data_soup.findAll("div", {"data-role": "comment-row"})
+    comment_json_list = []
+    for item in comment_row:
+        try:
+            comment = {}
+            try:
+                if "re" == item['class'][1]:
+                    re_comment = True
+                else:
+                    re_comment = False
+            except:
+                re_comment =False
+            comment['comment'] = item.find("div",{"class":"comment_content"}).find("div",{"class":"comment_view"}).text.strip()
+            comment['username'] = item['data-author-id']
+            comment['checkReComment'] = re_comment
+            comment['commentSn'] = item['data-comment-sn']
+            comment_json_list.append(comment)
+        except:
+            pass
     idx = 0
     clear_screen()
     show_header()
     print(bbs_title, "제목:'", title+"'", "글쓴이: ",author)
-    print(" 총 "+ str(len(outage_json))+" 개의 댓글이 달렸습니다.")
+    print(" 총 "+ str(len(comment_json_list))+" 개의 댓글이 달렸습니다.")
     print("__________________________________________________________________________________________________________________________________________")
     print("")
-    max_page = int((len(outage_json)/5))+1
-    for i in range(0,((int(max_page) *5)-len(outage_json))):
-        outage_json.append({})
+    max_page = int((len(comment_json_list)/5))+1
+    for i in range(0,((int(max_page) *5)-len(comment_json_list))):
+        comment_json_list.append({})
 
     for page in range(0, int(max_page)):
-        for item in outage_json[page*5:page*5+5]:
+        for item in comment_json_list[page*5:page*5+5]:
             try:
                 comment = item['comment']
-                username = item['member']['userId']
-                re_comment_sn = item['reCommentSn']
+                username = item['username']
+                re_comment_sn = item['checkReComment']
                 comment_sn = item['commentSn']
                 l = comment.replace("\n"," ").split(" ")
                 n = 10
@@ -437,13 +459,13 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
                         line = "\""+line
                     if idx==len(lines)-1:
                         line = line+"\""
-                    if re_comment_sn!=comment_sn:
+                    if re_comment_sn==True:
                         print("\t\t"+line.strip())
                     else:
                         print("\t"+line.strip())
                     idx+=1
 
-                if re_comment_sn!=comment_sn:
+                if re_comment_sn==True:
                     print("\t\t(by "+username+")")
                 else:
                     print("\t(by "+username+")")
@@ -492,7 +514,6 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     else:
         article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
     
-    print(article_data_soup)
     post = article_data_soup.find("div", {"class": "post_content"}).text.strip()
     try:
         img = article_data_soup.find("img",{"data-role":"attach-image"})['src']
@@ -503,12 +524,14 @@ def read_post(bbs_title, article_num, article_data, sub_page):
         item_info = ""
         item_info+= "\n물품 정보"
         seller_info = article_data_soup.find("div", {"class": "market_product"})
-        items = seller_info.find_all("li")[:5]
-        seller_contact = article_data_soup.find("table", {"class": "seller_contact"})
+        print(seller_info)
+        items = seller_info.findAll("div",{"class":"product_table"})
+        seller_contact = article_data_soup.find("table", {"class": "popup_contact"})
         for item in items:
-            cat = item.find("span")
-            item_info+= cat.text + " : " + item.text.replace(cat.text, '')+"\n"
-        if login_session != None or seller_contact == None:
+            parsed_item = item.findAll("span")
+            item_info+= parsed_item[0].text + " : " + parsed_item[1].text+"\n"
+        
+        if login_session != None and seller_contact != None:
             try:
                 rows = seller_contact.find_all("tr")
                 item_info+="\n판매자 정보"
@@ -518,7 +541,7 @@ def read_post(bbs_title, article_num, article_data, sub_page):
                 pass
         else:
             item_info+="\n판매자 정보는 가입 한 상태에서 15일이 지나야 볼 수 있습니다."
-
+        item_info+="\n\n"
     post_lines = post.split("\n")
     new_post_lines = []
     for line in post_lines:
@@ -632,7 +655,10 @@ def get_list(bbs="m",page=0, keyword=None):
                 list_article = page_data.findAll("div", {"class": "list_item symph_row"})
                 for item in list_article:
                     title = item.findAll("span")[1].text
-                    comment_no = item.findAll("span")[2].text
+                    try:
+                        comment_no = item.findAll("span",{"class":"rSymph05"})[0].text
+                    except:
+                        comment_no = ""                    
                     hits = item.findAll("div")[3].span.text
                     link = item.find("a",{"class":"list_subject"})['href']
                     author = item['data-author-id'].strip()
@@ -838,6 +864,8 @@ def cmd_line():
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
 
             if cmd.strip()=="t":
+                page = 0
+                sub_page = 0
                 article_data = []
             
             if cmd.strip()=="n":
