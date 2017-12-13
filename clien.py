@@ -44,7 +44,7 @@ jirum_url = "https://www.clien.net/service/board/jirum?&od=T31&po="
 use_url = "https://www.clien.net/service/board/use?&od=T31&po="
 buysell_url = "https://www.clien.net/service/board/sold?&od=T31&po="
 qna_url = "https://www.clien.net/service/board/kin?&od=T31&po="
-useful_url = "https://www.clien.net/service/board/kin?&od=T31&po="
+useful_url = "https://www.clien.net/service/board/useful?&od=T31&po="
 base_url = "https://www.clien.net"
 
 global bbs_title
@@ -647,7 +647,7 @@ def get_list(bbs="m",page=0, keyword=None):
         if bbs =="f":
             url = useful_url
         
-        if bbs =="m" or bbs == "n":
+        if bbs =="m" or bbs == "n"  or bbs == "f":
             for page in (page*2,page*2+1):
                 new_url = url+str(page)
                 if keyword is not None:
@@ -670,7 +670,7 @@ def get_list(bbs="m",page=0, keyword=None):
                     timestamp = item.find("div",{"class":"list_time"}).span.span.text
                     data.append((title,author,link,hits,timestamp,comment_no))
 
-        if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a"  or bbs == "f":
+        if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a" :
             for page in (page*2,page*2+1):
                 new_url = url+str(page)
                 if keyword is not None:
