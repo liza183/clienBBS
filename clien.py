@@ -687,11 +687,18 @@ def get_list(bbs="f",page=0, keyword=None):
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 list_article = page_data.findAll("div", {"class": "list_item symph_row"})
                 for item in list_article:
+                    
                     try:
-                        category = item.find("div",{"class":"list_title"}).findAll("span")[0].text.strip()
+                        spans = item.find("div",{"class":"list_title"}).findAll("span")
+                        for span in spans:
+                            try:
+                                span['class']
+                            except:
+                                title = span.text
+                        
                     except:
-                        category = ""
-                    title = item.find("div",{"class":"list_title"}).findAll("span")[1].text.strip()
+                        title="PARSE ERROR"
+                    
                     try:
                         comment_no = item.find("span",{"class":"rSymph05"}).text
                     except:
