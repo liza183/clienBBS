@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='clienBBS',
-    version='0.25',
+    version='0.30',
     description='clienBBS: Retro-style BBS interface for the Clien.net community',
     long_description='',
     url='https://github.com/liza183/clienBBS',
