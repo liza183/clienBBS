@@ -44,6 +44,7 @@ jirum_url = "https://www.clien.net/service/board/jirum?&od=T31&po="
 use_url = "https://www.clien.net/service/board/use?&od=T31&po="
 buysell_url = "https://www.clien.net/service/board/sold?&od=T31&po="
 qna_url = "https://www.clien.net/service/board/kin?&od=T31&po="
+useful_url = "https://www.clien.net/service/board/kin?&od=T31&po="
 base_url = "https://www.clien.net"
 
 global bbs_title
@@ -230,7 +231,8 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
  (m) 모두의 공원	(u) 사용기
  (n) 새소식		(b) 회원중고장터
  (t) 팁/강좌		(a) 아무거나 질문
- (j) 알뜰 구매		(c) 대화의 공원 (채팅방)
+ (j) 알뜰 구매		(f) 유용한 사이트
+ (c) 대화의 공원 (채팅방)
 __________________________________________________________________________________________________________________________________________
 
   """
@@ -641,6 +643,9 @@ def get_list(bbs="m",page=0, keyword=None):
         
         if bbs =="a":
             url = qna_url
+
+        if bbs =="f":
+            url = useful_url
         
         if bbs =="m" or bbs == "n":
             for page in (page*2,page*2+1):
@@ -665,7 +670,7 @@ def get_list(bbs="m",page=0, keyword=None):
                     timestamp = item.find("div",{"class":"list_time"}).span.span.text
                     data.append((title,author,link,hits,timestamp,comment_no))
 
-        if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a":
+        if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a"  or bbs == "f":
             for page in (page*2,page*2+1):
                 new_url = url+str(page)
                 if keyword is not None:
@@ -794,6 +799,12 @@ def cmd_line():
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [아무거나 질문]"
+
+            if cmd.strip()=="f":
+                page = 0
+                keyword = None
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
+                bbs_title = "* [유용한 사이트]"
 
             if cmd.strip()=="q":
                 sys.exit()
