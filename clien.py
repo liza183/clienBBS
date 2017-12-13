@@ -20,6 +20,7 @@ import requests
 import os
 import sys
 import certifi
+import time
 
 def resource_path(relative):
     return os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")),
@@ -134,6 +135,7 @@ def chat_client():
 
                     msg = bytes('['+nick+' ('+logged_in_user+')] '+msg,"utf-8")
                     s.send(msg)
+                    time.sleep(1)
                     sys.stdout.write('['+nick+' ('+logged_in_user+')] '); sys.stdout.flush() 
 
 
@@ -188,11 +190,11 @@ ________________________________________________________________________________
   """
     print(welcome_msg)
     while True:
-        cmd_list="(l) 로그인 (엔터) 게스트로 시작 (q) 종료하기 >> "
+        cmd_list="(l) 로그인 (엔터) 게스트로 시작 (\q) 종료하기 >> "
         cmd = input(cmd_list)
         if cmd.strip()=="":
             break
-        if cmd.strip()=="q":
+        if cmd.strip()=="\q":
             print("")
             print("안녕히 가십시오. ")
             print("")
@@ -228,11 +230,11 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
 
 열람하실 게시판을 선택해 주세요.
 
- (m) 모두의 공원	(u) 사용기
- (n) 새소식		(b) 회원중고장터
- (t) 팁/강좌		(a) 아무거나 질문
- (j) 알뜰 구매		(f) 유용한 사이트
- (c) 대화의 공원 (채팅방)
+ (f) 모두의 공원	(u) 사용기
+ (n) 새소식		(s) 회원중고장터
+ (l) 팁/강좌		(q) 아무거나 질문
+ (j) 알뜰 구매		(t) 유용한 사이트
+ (cc) 대화의 공원 (시험 운영)
 __________________________________________________________________________________________________________________________________________
 
   """
@@ -372,13 +374,13 @@ def write(bbs_title):
         data = json.loads(json.dumps(data))
         #
         
-        if bbs=="m":
+        if bbs=="f":
             url = park_url
         
         if bbs =="n":
             url = news_url
         
-        if bbs =="t":
+        if bbs =="l":
             url = tips_url
         
         if bbs =="j":
@@ -387,11 +389,14 @@ def write(bbs_title):
         if bbs =="u":
             url = use_url
         
-        if bbs =="b":
+        if bbs =="s":
             url = buysell_url
         
-        if bbs =="a":
+        if bbs =="q":
             url = qna_url
+        
+        if bbs =="t":
+            url = useful_url
 
         api_url = "https://www.clien.net/service/api/"+url.split("https://www.clien.net/service/")[1].split("?")[0]
         
@@ -411,13 +416,14 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
     author = article_data[sub_page*20+article_num][1]
     hits = article_data[sub_page*20+article_num][3]
     timestamp = article_data[sub_page*20+article_num][4]
-    comment_url = "https://www.clien.net/service/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment?data={\"order\":\"date\",\"po\":0,\"ps\":100,\"writer\":\"\"}"
+    comment_url = "https://www.clien.net/service/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment?order=date&po=0&ps=99999"
     comment_data = requests.get(comment_url,verify=cert_path).text
     comment_data_soup = Soup(comment_data, 'lxml')
     comment_row = comment_data_soup.findAll("div", {"data-role": "comment-row"})
     comment_json_list = []
     for item in comment_row:
         try:
+            #print(item)
             comment = {}
             try:
                 if "re" == item['class'][1]:
@@ -584,18 +590,18 @@ def read_post(bbs_title, article_num, article_data, sub_page):
         show_lower()
         if img is None:
             if (page+1)!=int(max_page):
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (b) 뒤로 가기 (r) 댓글 달기 (q) 종료 하기 >> "
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (b) 뒤로 가기 (r) 댓글 달기 (\q) 종료 하기 >> "
             elif str(comment_no).strip()!="":
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (b) 뒤로가기 (r) 댓글 달기 (q) 종료 하기 >> "
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (b) 뒤로가기 (r) 댓글 달기 (\q) 종료 하기 >> "
             else:
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (r) 댓글 달기 (q) 종료 하기 >> "
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (r) 댓글 달기 (\q) 종료 하기 >> "
         else:
             if (page+1)!=int(max_page):
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (i) 첨부 이미지 보기 (b) 뒤로 가기 (r) 댓글 달기 (q) 종료 하기 >> "
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (i) 첨부 이미지 보기 (b) 뒤로 가기 (r) 댓글 달기 (\q) 종료 하기 >> "
             elif str(comment_no).strip()!="":
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (i) 첨부 이미지 보기 (b) 뒤로가기 (r) 댓글 달기 (q) 종료 하기 >> "
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (i) 첨부 이미지 보기 (b) 뒤로가기 (r) 댓글 달기 (\q) 종료 하기 >> "
             else:
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (i) 첨부 이미지 보기 (r) 댓글 달기 (q) 종료 하기 >> "
+                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (i) 첨부 이미지 보기 (r) 댓글 달기 (\q) 종료 하기 >> "
         cmd = input(cmd_list)
         
         if (page+1)==int(max_page) and cmd.strip()=="" and str(comment_no).strip()!="":
@@ -612,24 +618,24 @@ def read_post(bbs_title, article_num, article_data, sub_page):
             show_comment(bbs_title, article_num, article_data, sub_page)
         if cmd.strip()=="b":
             return
-        if cmd.strip()=="q":
+        if cmd.strip()=="\q":
             print("* 감사합니다. 안녕히가세요.")
             sys.exit()
         if cmd.strip()=="r":
             reply(bbs_title, article_num, article_data, sub_page)
             show_comment(bbs_title, article_num, article_data, sub_page)
         
-def get_list(bbs="m",page=0, keyword=None):
+def get_list(bbs="f",page=0, keyword=None):
         global login_session
         data = []
         
-        if bbs=="m":
+        if bbs=="f":
             url = park_url
         
         if bbs =="n":
             url = news_url
         
-        if bbs =="t":
+        if bbs =="l":
             url = tips_url
         
         if bbs =="j":
@@ -638,16 +644,16 @@ def get_list(bbs="m",page=0, keyword=None):
         if bbs =="u":
             url = use_url
         
-        if bbs =="b":
+        if bbs =="s":
             url = buysell_url
         
-        if bbs =="a":
+        if bbs =="q":
             url = qna_url
 
-        if bbs =="f":
+        if bbs =="t":
             url = useful_url
         
-        if bbs =="m" or bbs == "n"  or bbs == "f":
+        if bbs =="f" or bbs == "n"  or bbs == "t":
             for page in (page*2,page*2+1):
                 new_url = url+str(page)
                 if keyword is not None:
@@ -670,7 +676,7 @@ def get_list(bbs="m",page=0, keyword=None):
                     timestamp = item.find("div",{"class":"list_time"}).span.span.text
                     data.append((title,author,link,hits,timestamp,comment_no))
 
-        if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a" :
+        else:
             for page in (page*2,page*2+1):
                 new_url = url+str(page)
                 if keyword is not None:
@@ -749,16 +755,16 @@ def cmd_line():
     while True:
         
         show_top_menu()
-        cmd_list="(q) 종료하기 >> "
+        cmd_list="(\q) 종료하기 >> "
 
         if len(article_data)==0:
             cmd = input(cmd_list)
             bbs = cmd.strip()
             
-            if cmd.strip()=="c":
+            if cmd.strip()=="cc":
                 chat_client()
 
-            if cmd.strip()=="m":
+            if cmd.strip()=="f":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
@@ -770,7 +776,7 @@ def cmd_line():
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [새소식]"
 
-            if cmd.strip()=="t":
+            if cmd.strip()=="l":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
@@ -788,29 +794,29 @@ def cmd_line():
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [사용기]"
             
-            if cmd.strip()=="b":
+            if cmd.strip()=="s":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [회원 중고장터]"
             
-            if cmd.strip()=="a":
+            if cmd.strip()=="q":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [아무거나 질문]"
 
-            if cmd.strip()=="f":
+            if cmd.strip()=="t":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [유용한 사이트]"
 
-            if cmd.strip()=="q":
+            if cmd.strip()=="\q":
                 sys.exit()
-            if cmd.strip()=="c":
+            if cmd.strip()=="\c":
                 clear_screen()
-            if cmd.strip()=="l":
+            if cmd.strip()=="\l":
                 pass
                 #login_session = login()
         else:   
@@ -837,7 +843,7 @@ def cmd_line():
                     break
 
             show_lower()
-            cmd_list="[PAGE:"+str(page*3+sub_page)+"] (글번호) 글 읽기 (n)새글 확인 (t) 상위 메뉴 (s) 검색 (w) 글 쓰기 (q) 종료 하기 (엔터) 다음 페이지 (b) 이전 페이지>> "
+            cmd_list="[PAGE:"+str(page*3+sub_page)+"] (글번호) 글 읽기 (n)새글 확인 (t) 상위 메뉴 (s) 검색 (w) 글 쓰기 (\q) 종료 하기 (엔터) 다음 페이지 (b) 이전 페이지>> "
             cmd = input(cmd_list)
             
             try:
@@ -899,7 +905,7 @@ def cmd_line():
                     page+=1
                     sub_page=0
                     article_data = get_list(bbs=bbs,page=page,keyword=keyword)
-            if cmd.strip()=="q":
+            if cmd.strip()=="\q":
                 print("")
                 print("안녕히 가십시오. ")
                 print("")
