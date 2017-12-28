@@ -26,6 +26,9 @@ import certifi
 import time
 
 import os
+global path
+path = os.path.dirname(os.path.realpath(__file__))
+
 try:
     print("최신 버전이 있을 경우 clienBBS 를 최신으로 업데이트 합니다.")
     print("업데이트 된 버전은 다음 실행부터 적용됩니다.")
@@ -68,12 +71,10 @@ global keyword
 global read_log
 
 try:
-    with open('read_log.pkl','rb') as fin:
+    with open(os.path.join(path,'read_log.pkl'),'rb') as fin:
         read_log = pickle.load(fin)    
 except:
     read_log = {}
-
-print(read_log)
 
 login_session = None
 logged_in_user = None
@@ -172,6 +173,7 @@ def display_img(img):
 def welcome():
     global login_session
     global read_log
+    global path
     clear_screen()
     welcome_msg = """
 클리앙에 오신 것을 환영합니다.
@@ -200,7 +202,7 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.36 (12/28/2017)
+  VER 0.37 (12/28/2017)
   
   [공지] 글 쓰기를 취소할 수 있도록 하였습니다. 작성시 내용에 \c를 입력하세요
   [공지] 웹브라우저에서 보기, 다음 글 보기 기능을 추가 하였습니다.
@@ -223,9 +225,8 @@ ________________________________________________________________________________
             print("안녕히 가십시오. ")
             print("")
             
-            with open('read_log.pkl','wb') as fout:
+            with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
                 pickle.dump(read_log, fout)
-            print(read_log)
             sys.exit()
         if cmd.strip()=="l":
             login_session = login()
@@ -559,6 +560,7 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     timestamp = article_data[sub_page*20+article_num][4]
     comment_no = article_data[sub_page*20+article_num][5]
     global read_log
+    global path
     read_log[author.strip()+"_"+timestamp.strip()] = True
     board_type = article_url.split("/")[-2]
     
@@ -662,9 +664,8 @@ def read_post(bbs_title, article_num, article_data, sub_page):
 
         if cmd.strip()=="\q":
             print("* 감사합니다. 안녕히가세요.")
-            with open('read_log.pkl','wb') as fout:
+            with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
                 pickle.dump(read_log, fout)
-            print(read_log)
             sys.exit()
         
         if cmd.strip()=="r":
@@ -802,6 +803,7 @@ def padding_str(text,len):
 
 def cmd_line():
     global read_log
+    global path
     global login_session
     global bbs
     global bbs_title
@@ -872,9 +874,8 @@ def cmd_line():
 
             if cmd.strip()=="\q":
                 print("안녕히 가십시오")
-                with open('read_log.pkl','wb') as fout:
+                with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
                     pickle.dump(read_log, fout)
-                print(read_log)
                 sys.exit()
             if cmd.strip()=="\c":
                 clear_screen()
@@ -975,7 +976,7 @@ def cmd_line():
                 print("")
                 print("안녕히 가십시오. ")
                 print("")
-                with open('read_log.pkl','wb') as fout:
+                with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
                     pickle.dump(read_log, fout)
                 sys.exit()
             if cmd.strip()=="c":
