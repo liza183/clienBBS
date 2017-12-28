@@ -178,10 +178,10 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.32 (12/13/2017)
+  VER 0.35 (12/28/2017)
   
-  [공지] 새로운 클리앙 개편에 맞추어 업데이트 되었습니다!
-  [공지] 간단한 채팅방 기능을 추가했습니다! (시험운영입니다. 알려진 버그 [글겹침] 있습니다.)
+  [공지] 검색 문제를 해결하였습니다
+  [공지] 채팅방 서비스 테스트를 종료합니다
 
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
   [보다 쾌적한 사용을 위해 터미널의 상하,좌우폭을 조절해주세요]
@@ -234,7 +234,6 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
  (n) 새소식		(s) 회원중고장터
  (l) 팁/강좌		(q) 아무거나 질문
  (j) 알뜰 구매		(t) 유용한 사이트
- (cc) 대화의 공원 (시험 운영)
 __________________________________________________________________________________________________________________________________________
 
   """
@@ -658,6 +657,8 @@ def get_list(bbs="f",page=0, keyword=None):
                 new_url = url+str(page)
                 if keyword is not None:
                     new_url+="&sk=title&sv="+keyword
+                    new_url="https://www.clien.net/service/search/board/"+new_url.split("board/")[1]
+
                 if login_session is not None:
                     page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
                 else:
@@ -681,10 +682,12 @@ def get_list(bbs="f",page=0, keyword=None):
                 new_url = url+str(page)
                 if keyword is not None:
                     new_url+="&sk=title&sv="+keyword
+                    new_url="https://www.clien.net/service/search/board/"+new_url.split("board/")[1]
                 if login_session is not None:
                     page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
+                
                 list_article = page_data.findAll("div", {"class": "list_item symph_row"})
                 for item in list_article:
                     
@@ -768,8 +771,8 @@ def cmd_line():
             cmd = input(cmd_list)
             bbs = cmd.strip()
             
-            if cmd.strip()=="cc":
-                chat_client()
+            #if cmd.strip()=="cc":
+            #    chat_client()
 
             if cmd.strip()=="f":
                 page = 0
