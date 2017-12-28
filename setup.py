@@ -3,13 +3,13 @@ from setuptools import setup
 
 setup(
     name='clienBBS',
-    version='0.35',
+    version='0.36',
     description='clienBBS: Retro-style BBS interface for the Clien.net community',
     long_description='',
     url='https://github.com/liza183/clienBBS',
     author='Matt Sangkeun Lee',
     author_email='johnleespapa@gmail.com',
-    license='Private',  # 알맞게 고쳐주세요!
+    license='Private Use Only',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',

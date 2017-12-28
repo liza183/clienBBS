@@ -11,6 +11,9 @@ import readline
 import json
 from PIL import Image
 import urllib.request
+import webbrowser
+import pickle
+
 
 #!/usr/bin/env python
 # requests_ssl.py
@@ -21,6 +24,15 @@ import os
 import sys
 import certifi
 import time
+
+import os
+try:
+    print("최신 버전이 있을 경우 clienBBS 를 최신으로 업데이트 합니다.")
+    print("업데이트 된 버전은 다음 실행부터 적용됩니다.")
+    os.system('pip install clienBBS --upgrade >> pip.log ')
+    os.system('pip3 install clienBBS --upgrade >> pip.log ')
+except:
+    pass
 
 def resource_path(relative):
     return os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")),
@@ -53,6 +65,15 @@ global bbs
 global login_session
 global logged_in_user
 global keyword
+global read_log
+
+try:
+    with open('read_log.pkl','rb') as fin:
+        read_log = pickle.load(fin)    
+except:
+    read_log = {}
+
+print(read_log)
 
 login_session = None
 logged_in_user = None
@@ -150,6 +171,7 @@ def display_img(img):
 		
 def welcome():
     global login_session
+    global read_log
     clear_screen()
     welcome_msg = """
 클리앙에 오신 것을 환영합니다.
@@ -178,9 +200,11 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.35 (12/28/2017)
+  VER 0.36 (12/28/2017)
   
-  [공지] 검색 문제를 해결하였습니다
+  [공지] 글 쓰기를 취소할 수 있도록 하였습니다. 작성시 내용에 \c를 입력하세요
+  [공지] 웹브라우저에서 보기, 다음 글 보기 기능을 추가 하였습니다.
+  [공지] 자동 업데이트, 읽은 글 표시 기능이 추가 되었습니다.
   [공지] 채팅방 서비스 테스트를 종료합니다
 
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
@@ -198,6 +222,10 @@ ________________________________________________________________________________
             print("")
             print("안녕히 가십시오. ")
             print("")
+            
+            with open('read_log.pkl','wb') as fout:
+                pickle.dump(read_log, fout)
+            print(read_log)
             sys.exit()
         if cmd.strip()=="l":
             login_session = login()
@@ -298,13 +326,16 @@ def reply(bbs_title, article_num, article_data, sub_page):
         article_id = article_url.split("https://www.clien.net/service/")[1].split("?")[0]
         comment_url = "https://www.clien.net/service/api/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment/regist"
         lines = []
-        print("내용 입력을 마치시리면 ** 후 엔터를 입력해주세요.")
+        print("내용 입력을 마치시리면 \d 후 엔터를 입력해주세요. 글 작성 취소는 \c를 입력하세요 ")
         idx = 0
         while True:
             line = input(" "+str(idx)+": ")
             idx+=1
-            if line=="**":
+            if line=="\d":
                 break
+            if line=="\c":
+                input("글 쓰기를 취소합니다 (엔터) ")
+                return
             else:
                 lines.append(line)
         lines.append("<br> - clienBBS 로 작성한 댓글입니다.")
@@ -345,13 +376,16 @@ def write(bbs_title):
         title = input("제목을 입력하세요 > ")
         print("")
         lines = []
-        print("내용 입력을 마치시리면 ** 후 엔터를 입력해주세요.")
+        print("내용 입력을 마치시리면 \d 후 엔터를 입력해주세요. 글 작성 취소는 \c를 입력하세요 ")
         idx = 0
         while True:
             line = input(" "+str(idx)+": ")
             idx+=1
-            if line=="**":
+            if line=="\d":
                 break
+            if line=="\c":
+                input("글 쓰기를 취소합니다 (엔터) ")
+                return
             else:
                 lines.append(line)
         lines.append("<br> - clienBBS 로 작성한 글입니다.")
@@ -408,7 +442,10 @@ def write(bbs_title):
                 print ('새 글이 등록되었습니다.')
         else:
             print ('새 글이 등록되지 않았습니다.')
-        
+
+def open_web_page(url):
+    webbrowser.open_new(url)
+
 def show_comment(bbs_title, article_num, article_data, sub_page):
     article_url = base_url+article_data[sub_page*20+article_num][2]
     title = article_data[sub_page*20+article_num][0]
@@ -487,8 +524,10 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
         print("__________________________________________________________________________________________________________________________________________")
         print("")
         cmd = input("PAGE:["+str(page+1)+"/"+str(max_page)+"] (엔터) 댓글 더 보기 (b,l) 뒤로가기/글목록 보기 (r) 댓글 달기 >> ")
+        
         if cmd=="b" or cmd=="l":
             return
+        
         if cmd=="r":
             reply(bbs_title, article_num, article_data, sub_page)
             show_comment(bbs_title, article_num, article_data, sub_page)
@@ -500,11 +539,17 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
 
     show_lower()
 
-    cmd = input("PAGE:["+str(page+1)+"/"+str(max_page)+"] (엔터) 글 목록 보기 (r) 댓글 달기>> ")
+    cmd = input("PAGE:["+str(page+1)+"/"+str(max_page)+"] (엔터) 글 목록 보기 (n) 다음 글 보기 (r) 댓글 달기>> ")
 
     if cmd=="r":
         reply(bbs_title, article_num, article_data, sub_page)
         show_comment(bbs_title, article_num, article_data, sub_page)
+    
+    elif cmd=="n":
+        try:
+            read_post(bbs_title, article_num+1, article_data, sub_page)
+        except:
+            input(" 다음 글이 없습니다. (엔터)")
 
 def read_post(bbs_title, article_num, article_data, sub_page):
     article_url = base_url+article_data[sub_page*20+article_num][2]
@@ -513,7 +558,8 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     hits = article_data[sub_page*20+article_num][3]
     timestamp = article_data[sub_page*20+article_num][4]
     comment_no = article_data[sub_page*20+article_num][5]
-    
+    global read_log
+    read_log[author.strip()+"_"+timestamp.strip()] = True
     board_type = article_url.split("/")[-2]
     
     if login_session != None and board_type == "sold":
@@ -587,39 +633,40 @@ def read_post(bbs_title, article_num, article_data, sub_page):
             else:
                 print(" -- 글의 마지막입니다. -- "+str(comment_no) + " 개의 댓글이 달렸습니다.")
         show_lower()
-        if img is None:
-            if (page+1)!=int(max_page):
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (b) 뒤로 가기 (r) 댓글 달기 (\q) 종료 하기 >> "
-            elif str(comment_no).strip()!="":
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (b) 뒤로가기 (r) 댓글 달기 (\q) 종료 하기 >> "
-            else:
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (r) 댓글 달기 (\q) 종료 하기 >> "
+    
+        if (page+1)!=int(max_page):
+            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (i) 웹 브라우저에서 보기 (b) 뒤로 가기 (n) 다음글 읽기 (r) 댓글 달기 (\q) 종료 하기 >> "
+        elif str(comment_no).strip()!="":
+            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (i) 웹 브라우저에서 보기 (b) 뒤로가기 (n) 다음글 읽기(r) 댓글 달기 (\q) 종료 하기 >> "
         else:
-            if (page+1)!=int(max_page):
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (i) 첨부 이미지 보기 (b) 뒤로 가기 (r) 댓글 달기 (\q) 종료 하기 >> "
-            elif str(comment_no).strip()!="":
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (i) 첨부 이미지 보기 (b) 뒤로가기 (r) 댓글 달기 (\q) 종료 하기 >> "
-            else:
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (i) 첨부 이미지 보기 (r) 댓글 달기 (\q) 종료 하기 >> "
+            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (i) 웹 브라우저에서 보기 (r) 댓글 달기 (n) 다음글 읽기 (\q) 종료 하기 >> "
+        
         cmd = input(cmd_list)
         
         if (page+1)==int(max_page) and cmd.strip()=="" and str(comment_no).strip()!="":
             show_comment(bbs_title, article_num, article_data, sub_page)
     
         if cmd.strip()=="i":
-            if img is not None:
-                try:
-                    display_img(img)
-                except:
-                    print("현재 환경에서는 지원되지 않습니다.")
-
+            open_web_page(article_url)
             page = max_page - 1
             show_comment(bbs_title, article_num, article_data, sub_page)
+
         if cmd.strip()=="b":
             return
+        
+        if cmd.strip()=="n":
+            try:
+                read_post(bbs_title, article_num+1, article_data, sub_page)
+            except:
+                input(" 다음 글이 없습니다. (엔터)")
+
         if cmd.strip()=="\q":
             print("* 감사합니다. 안녕히가세요.")
+            with open('read_log.pkl','wb') as fout:
+                pickle.dump(read_log, fout)
+            print(read_log)
             sys.exit()
+        
         if cmd.strip()=="r":
             reply(bbs_title, article_num, article_data, sub_page)
             show_comment(bbs_title, article_num, article_data, sub_page)
@@ -754,6 +801,7 @@ def padding_str(text,len):
     return text
 
 def cmd_line():
+    global read_log
     global login_session
     global bbs
     global bbs_title
@@ -823,6 +871,10 @@ def cmd_line():
                 bbs_title = "* [유용한 사이트]"
 
             if cmd.strip()=="\q":
+                print("안녕히 가십시오")
+                with open('read_log.pkl','wb') as fout:
+                    pickle.dump(read_log, fout)
+                print(read_log)
                 sys.exit()
             if cmd.strip()=="\c":
                 clear_screen()
@@ -846,8 +898,12 @@ def cmd_line():
                     comment_no = padding_str(item[5],5)  
                 else:
                     comment_no = padding_str("["+item[5]+"]",5)  
-
-                print(str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
+                
+                try:
+                    read_log[author.strip()+"_"+item[4].strip()]
+                    print("  "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
+                except:
+                    print("* "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
                 idx+=1
                 if idx!=0 and idx%20==0:
                     break
@@ -919,6 +975,8 @@ def cmd_line():
                 print("")
                 print("안녕히 가십시오. ")
                 print("")
+                with open('read_log.pkl','wb') as fout:
+                    pickle.dump(read_log, fout)
                 sys.exit()
             if cmd.strip()=="c":
                 clear_screen()
