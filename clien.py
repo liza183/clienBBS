@@ -202,12 +202,9 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.37 (12/28/2017)
+  VER 0.40 (1/5/2017)
   
-  [공지] 글 쓰기를 취소할 수 있도록 하였습니다. 작성시 내용에 \c를 입력하세요
-  [공지] 웹브라우저에서 보기, 다음 글 보기 기능을 추가 하였습니다.
-  [공지] 자동 업데이트, 읽은 글 표시 기능이 추가 되었습니다.
-  [공지] 채팅방 서비스 테스트를 종료합니다
+  [공지] OSX의 QuickLook 사용이 편리하도록 첨부된 사진,영상의 링크를 글에 표시하였습니다.
 
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
   [보다 쾌적한 사용을 위해 터미널의 상하,좌우폭을 조절해주세요]
@@ -570,11 +567,17 @@ def read_post(bbs_title, article_num, article_data, sub_page):
         article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
     
     post = article_data_soup.find("div", {"class": "post_content"}).text.strip()
-    try:
-        img = article_data_soup.find("img",{"data-role":"attach-image"})['src']
-    except:
-        img = None
+    img = article_data_soup.find("div", {"class": "post_content"}).findAll("img")
+    vid = article_data_soup.find("div", {"class": "post_content"}).findAll("iframe")
 
+    if img is not None:
+        for item in img:
+            post = item['src']+"\n"+ post
+    
+    if vid is not None:
+        for item in vid:
+            post = item['src']+"\n"+ post
+    
     if board_type == "sold":
         item_info = ""
         item_info+= "\n물품 정보"
