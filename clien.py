@@ -11,6 +11,9 @@ import readline
 import json
 from PIL import Image
 import urllib.request
+import webbrowser
+import pickle
+
 
 #!/usr/bin/env python
 # requests_ssl.py
@@ -20,6 +23,19 @@ import requests
 import os
 import sys
 import certifi
+import time
+
+import os
+global path
+path = os.path.dirname(os.path.realpath(__file__))
+
+try:
+    print("최신 버전이 있을 경우 clienBBS 를 최신으로 업데이트 합니다.")
+    print("업데이트 된 버전은 다음 실행부터 적용됩니다.")
+    os.system('pip install clienBBS --upgrade >> pip.log ')
+    os.system('pip3 install clienBBS --upgrade >> pip.log ')
+except:
+    pass
 
 def resource_path(relative):
     return os.path.join(getattr(sys, '_MEIPASS', os.path.abspath(".")),
@@ -44,6 +60,7 @@ jirum_url = "https://www.clien.net/service/board/jirum?&od=T31&po="
 use_url = "https://www.clien.net/service/board/use?&od=T31&po="
 buysell_url = "https://www.clien.net/service/board/sold?&od=T31&po="
 qna_url = "https://www.clien.net/service/board/kin?&od=T31&po="
+useful_url = "https://www.clien.net/service/board/useful?&od=T31&po="
 base_url = "https://www.clien.net"
 
 global bbs_title
@@ -51,6 +68,13 @@ global bbs
 global login_session
 global logged_in_user
 global keyword
+global read_log
+
+try:
+    with open(os.path.join(path,'read_log.pkl'),'rb') as fin:
+        read_log = pickle.load(fin)    
+except:
+    read_log = {}
 
 login_session = None
 logged_in_user = None
@@ -133,6 +157,7 @@ def chat_client():
 
                     msg = bytes('['+nick+' ('+logged_in_user+')] '+msg,"utf-8")
                     s.send(msg)
+                    time.sleep(1)
                     sys.stdout.write('['+nick+' ('+logged_in_user+')] '); sys.stdout.flush() 
 
 
@@ -147,6 +172,8 @@ def display_img(img):
 		
 def welcome():
     global login_session
+    global read_log
+    global path
     clear_screen()
     welcome_msg = """
 클리앙에 오신 것을 환영합니다.
@@ -175,7 +202,9 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.30
+  VER 0.50 1/5/2017)
+
+  [공지] OSX의 QuickLook 사용이 편리하도록 첨부된 사진,영상의 링크를 글에 표시하였습니다.
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
   [보다 쾌적한 사용을 위해 터미널의 상하,좌우폭을 조절해주세요]
 __________________________________________________________________________________________________________________________________________
@@ -183,14 +212,17 @@ ________________________________________________________________________________
   """
     print(welcome_msg)
     while True:
-        cmd_list="(l) 로그인 (엔터) 게스트로 시작 (q) 종료하기 >> "
+        cmd_list="(l) 로그인 (엔터) 게스트로 시작 (\q) 종료하기 >> "
         cmd = input(cmd_list)
         if cmd.strip()=="":
             break
-        if cmd.strip()=="q":
+        if cmd.strip()=="\q":
             print("")
             print("안녕히 가십시오. ")
             print("")
+            
+            with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
+                pickle.dump(read_log, fout)
             sys.exit()
         if cmd.strip()=="l":
             login_session = login()
@@ -223,10 +255,10 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
 
 열람하실 게시판을 선택해 주세요.
 
- (m) 모두의 공원	(u) 사용기
- (n) 새소식		(b) 회원중고장터
- (t) 팁/강좌		(a) 아무거나 질문
- (j) 알뜰 구매		(c) 대화의 공원 (채팅방)
+ (f) 모두의 공원	(u) 사용기
+ (n) 새소식		(s) 회원중고장터
+ (l) 팁/강좌		(q) 아무거나 질문
+ (j) 알뜰 구매		(t) 유용한 사이트
 __________________________________________________________________________________________________________________________________________
 
   """
@@ -291,13 +323,16 @@ def reply(bbs_title, article_num, article_data, sub_page):
         article_id = article_url.split("https://www.clien.net/service/")[1].split("?")[0]
         comment_url = "https://www.clien.net/service/api/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment/regist"
         lines = []
-        print("내용 입력을 마치시리면 ** 후 엔터를 입력해주세요.")
+        print("내용 입력을 마치시리면 \d 후 엔터를 입력해주세요. 글 작성 취소는 \c를 입력하세요 ")
         idx = 0
         while True:
             line = input(" "+str(idx)+": ")
             idx+=1
-            if line=="**":
+            if line=="\d":
                 break
+            if line=="\c":
+                input("글 쓰기를 취소합니다 (엔터) ")
+                return
             else:
                 lines.append(line)
         lines.append("<br> - clienBBS 로 작성한 댓글입니다.")
@@ -338,13 +373,16 @@ def write(bbs_title):
         title = input("제목을 입력하세요 > ")
         print("")
         lines = []
-        print("내용 입력을 마치시리면 ** 후 엔터를 입력해주세요.")
+        print("내용 입력을 마치시리면 \d 후 엔터를 입력해주세요. 글 작성 취소는 \c를 입력하세요 ")
         idx = 0
         while True:
             line = input(" "+str(idx)+": ")
             idx+=1
-            if line=="**":
+            if line=="\d":
                 break
+            if line=="\c":
+                input("글 쓰기를 취소합니다 (엔터) ")
+                return
             else:
                 lines.append(line)
         lines.append("<br> - clienBBS 로 작성한 글입니다.")
@@ -366,13 +404,13 @@ def write(bbs_title):
         data = json.loads(json.dumps(data))
         #
         
-        if bbs=="m":
+        if bbs=="f":
             url = park_url
         
         if bbs =="n":
             url = news_url
         
-        if bbs =="t":
+        if bbs =="l":
             url = tips_url
         
         if bbs =="j":
@@ -381,11 +419,14 @@ def write(bbs_title):
         if bbs =="u":
             url = use_url
         
-        if bbs =="b":
+        if bbs =="s":
             url = buysell_url
         
-        if bbs =="a":
+        if bbs =="q":
             url = qna_url
+        
+        if bbs =="t":
+            url = useful_url
 
         api_url = "https://www.clien.net/service/api/"+url.split("https://www.clien.net/service/")[1].split("?")[0]
         
@@ -398,34 +439,56 @@ def write(bbs_title):
                 print ('새 글이 등록되었습니다.')
         else:
             print ('새 글이 등록되지 않았습니다.')
-        
+
+def open_web_page(url):
+    webbrowser.open_new(url)
+
 def show_comment(bbs_title, article_num, article_data, sub_page):
     article_url = base_url+article_data[sub_page*20+article_num][2]
     title = article_data[sub_page*20+article_num][0]
     author = article_data[sub_page*20+article_num][1]
     hits = article_data[sub_page*20+article_num][3]
     timestamp = article_data[sub_page*20+article_num][4]
-    comment_url = "https://www.clien.net/service/api/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment?param={\"order\":\"date\",\"po\":0,\"ps\":100}"
-    print(comment_url)
-    outage_json = requests.get(comment_url,verify=cert_path).json()
-    print(outage_json)
+    comment_url = "https://www.clien.net/service/"+article_url.split("https://www.clien.net/service/")[1].split("?")[0]+"/comment?order=date&po=0&ps=99999"
+    comment_data = requests.get(comment_url,verify=cert_path).text
+    comment_data_soup = Soup(comment_data, 'lxml')
+    comment_row = comment_data_soup.findAll("div", {"data-role": "comment-row"})
+    comment_json_list = []
+    for item in comment_row:
+        try:
+            #print(item)
+            comment = {}
+            try:
+                if "re" == item['class'][1]:
+                    re_comment = True
+                else:
+                    re_comment = False
+            except:
+                re_comment =False
+            comment['comment'] = item.find("div",{"class":"comment_content"}).find("div",{"class":"comment_view"}).text.strip()
+            comment['username'] = item['data-author-id']
+            comment['checkReComment'] = re_comment
+            comment['commentSn'] = item['data-comment-sn']
+            comment_json_list.append(comment)
+        except:
+            pass
     idx = 0
     clear_screen()
     show_header()
     print(bbs_title, "제목:'", title+"'", "글쓴이: ",author)
-    print(" 총 "+ str(len(outage_json))+" 개의 댓글이 달렸습니다.")
+    print(" 총 "+ str(len(comment_json_list))+" 개의 댓글이 달렸습니다.")
     print("__________________________________________________________________________________________________________________________________________")
     print("")
-    max_page = int((len(outage_json)/5))+1
-    for i in range(0,((int(max_page) *5)-len(outage_json))):
-        outage_json.append({})
+    max_page = int((len(comment_json_list)/5))+1
+    for i in range(0,((int(max_page) *5)-len(comment_json_list))):
+        comment_json_list.append({})
 
     for page in range(0, int(max_page)):
-        for item in outage_json[page*5:page*5+5]:
+        for item in comment_json_list[page*5:page*5+5]:
             try:
                 comment = item['comment']
-                username = item['member']['userId']
-                re_comment_sn = item['reCommentSn']
+                username = item['username']
+                re_comment_sn = item['checkReComment']
                 comment_sn = item['commentSn']
                 l = comment.replace("\n"," ").split(" ")
                 n = 10
@@ -437,13 +500,13 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
                         line = "\""+line
                     if idx==len(lines)-1:
                         line = line+"\""
-                    if re_comment_sn!=comment_sn:
+                    if re_comment_sn==True:
                         print("\t\t"+line.strip())
                     else:
                         print("\t"+line.strip())
                     idx+=1
 
-                if re_comment_sn!=comment_sn:
+                if re_comment_sn==True:
                     print("\t\t(by "+username+")")
                 else:
                     print("\t(by "+username+")")
@@ -458,8 +521,10 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
         print("__________________________________________________________________________________________________________________________________________")
         print("")
         cmd = input("PAGE:["+str(page+1)+"/"+str(max_page)+"] (엔터) 댓글 더 보기 (b,l) 뒤로가기/글목록 보기 (r) 댓글 달기 >> ")
+        
         if cmd=="b" or cmd=="l":
             return
+        
         if cmd=="r":
             reply(bbs_title, article_num, article_data, sub_page)
             show_comment(bbs_title, article_num, article_data, sub_page)
@@ -471,11 +536,17 @@ def show_comment(bbs_title, article_num, article_data, sub_page):
 
     show_lower()
 
-    cmd = input("PAGE:["+str(page+1)+"/"+str(max_page)+"] (엔터) 글 목록 보기 (r) 댓글 달기>> ")
+    cmd = input("PAGE:["+str(page+1)+"/"+str(max_page)+"] (엔터) 글 목록 보기 (n) 다음 글 보기 (r) 댓글 달기>> ")
 
     if cmd=="r":
         reply(bbs_title, article_num, article_data, sub_page)
         show_comment(bbs_title, article_num, article_data, sub_page)
+    
+    elif cmd=="n":
+        try:
+            read_post(bbs_title, article_num+1, article_data, sub_page)
+        except:
+            input(" 다음 글이 없습니다. (엔터)")
 
 def read_post(bbs_title, article_num, article_data, sub_page):
     article_url = base_url+article_data[sub_page*20+article_num][2]
@@ -484,7 +555,9 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     hits = article_data[sub_page*20+article_num][3]
     timestamp = article_data[sub_page*20+article_num][4]
     comment_no = article_data[sub_page*20+article_num][5]
-    
+    global read_log
+    global path
+    read_log[author.strip()+"_"+timestamp.strip()] = True
     board_type = article_url.split("/")[-2]
     
     if login_session != None and board_type == "sold":
@@ -492,23 +565,30 @@ def read_post(bbs_title, article_num, article_data, sub_page):
     else:
         article_data_soup = Soup(requests.get(article_url,verify=cert_path).text, 'lxml')
     
-    print(article_data_soup)
     post = article_data_soup.find("div", {"class": "post_content"}).text.strip()
-    try:
-        img = article_data_soup.find("img",{"data-role":"attach-image"})['src']
-    except:
-        img = None
+    img = article_data_soup.find("div", {"class": "post_content"}).findAll("img")
+    vid = article_data_soup.find("div", {"class": "post_content"}).findAll("iframe")
 
+    if img is not None:
+        for item in img:
+            post = item['src']+"\n"+ post
+    
+    if vid is not None:
+        for item in vid:
+            post = item['src']+"\n"+ post
+    
     if board_type == "sold":
         item_info = ""
         item_info+= "\n물품 정보"
         seller_info = article_data_soup.find("div", {"class": "market_product"})
-        items = seller_info.find_all("li")[:5]
-        seller_contact = article_data_soup.find("table", {"class": "seller_contact"})
+        print(seller_info)
+        items = seller_info.findAll("div",{"class":"product_table"})
+        seller_contact = article_data_soup.find("table", {"class": "popup_contact"})
         for item in items:
-            cat = item.find("span")
-            item_info+= cat.text + " : " + item.text.replace(cat.text, '')+"\n"
-        if login_session != None or seller_contact == None:
+            parsed_item = item.findAll("span")
+            item_info+= parsed_item[0].text + " : " + parsed_item[1].text+"\n"
+        
+        if login_session != None and seller_contact != None:
             try:
                 rows = seller_contact.find_all("tr")
                 item_info+="\n판매자 정보"
@@ -518,7 +598,7 @@ def read_post(bbs_title, article_num, article_data, sub_page):
                 pass
         else:
             item_info+="\n판매자 정보는 가입 한 상태에서 15일이 지나야 볼 수 있습니다."
-
+        item_info+="\n\n"
     post_lines = post.split("\n")
     new_post_lines = []
     for line in post_lines:
@@ -557,54 +637,54 @@ def read_post(bbs_title, article_num, article_data, sub_page):
             else:
                 print(" -- 글의 마지막입니다. -- "+str(comment_no) + " 개의 댓글이 달렸습니다.")
         show_lower()
-        if img is None:
-            if (page+1)!=int(max_page):
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (b) 뒤로 가기 (r) 댓글 달기 (q) 종료 하기 >> "
-            elif str(comment_no).strip()!="":
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (b) 뒤로가기 (r) 댓글 달기 (q) 종료 하기 >> "
-            else:
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (r) 댓글 달기 (q) 종료 하기 >> "
+    
+        if (page+1)!=int(max_page):
+            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (i) 웹 브라우저에서 보기 (b) 뒤로 가기 (n) 다음글 읽기 (r) 댓글 달기 (\q) 종료 하기 >> "
+        elif str(comment_no).strip()!="":
+            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (i) 웹 브라우저에서 보기 (b) 뒤로가기 (n) 다음글 읽기(r) 댓글 달기 (\q) 종료 하기 >> "
         else:
-            if (page+1)!=int(max_page):
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 다음 페이지 (i) 첨부 이미지 보기 (b) 뒤로 가기 (r) 댓글 달기 (q) 종료 하기 >> "
-            elif str(comment_no).strip()!="":
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 댓글 보기 (i) 첨부 이미지 보기 (b) 뒤로가기 (r) 댓글 달기 (q) 종료 하기 >> "
-            else:
-                cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (i) 첨부 이미지 보기 (r) 댓글 달기 (q) 종료 하기 >> "
+            cmd_list="[PAGE:"+str(page+1)+"/"+str(int(max_page))+"] (엔터) 글 목록 보기 (i) 웹 브라우저에서 보기 (r) 댓글 달기 (n) 다음글 읽기 (\q) 종료 하기 >> "
+        
         cmd = input(cmd_list)
         
         if (page+1)==int(max_page) and cmd.strip()=="" and str(comment_no).strip()!="":
             show_comment(bbs_title, article_num, article_data, sub_page)
     
         if cmd.strip()=="i":
-            if img is not None:
-                try:
-                    display_img(img)
-                except:
-                    print("현재 환경에서는 지원되지 않습니다.")
-
+            open_web_page(article_url)
             page = max_page - 1
             show_comment(bbs_title, article_num, article_data, sub_page)
+
         if cmd.strip()=="b":
             return
-        if cmd.strip()=="q":
+        
+        if cmd.strip()=="n":
+            try:
+                read_post(bbs_title, article_num+1, article_data, sub_page)
+            except:
+                input(" 다음 글이 없습니다. (엔터)")
+
+        if cmd.strip()=="\q":
             print("* 감사합니다. 안녕히가세요.")
+            with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
+                pickle.dump(read_log, fout)
             sys.exit()
+        
         if cmd.strip()=="r":
             reply(bbs_title, article_num, article_data, sub_page)
             show_comment(bbs_title, article_num, article_data, sub_page)
         
-def get_list(bbs="m",page=0, keyword=None):
+def get_list(bbs="f",page=0, keyword=None):
         global login_session
         data = []
         
-        if bbs=="m":
+        if bbs=="f":
             url = park_url
         
         if bbs =="n":
             url = news_url
         
-        if bbs =="t":
+        if bbs =="l":
             url = tips_url
         
         if bbs =="j":
@@ -613,17 +693,46 @@ def get_list(bbs="m",page=0, keyword=None):
         if bbs =="u":
             url = use_url
         
-        if bbs =="b":
+        if bbs =="s":
             url = buysell_url
         
-        if bbs =="a":
+        if bbs =="q":
             url = qna_url
+
+        if bbs =="t":
+            url = useful_url
         
-        if bbs =="m" or bbs == "n":
+        if bbs =="f" or bbs == "n"  or bbs == "t":
             for page in (page*2,page*2+1):
                 new_url = url+str(page)
                 if keyword is not None:
                     new_url+="&sk=title&sv="+keyword
+                    new_url="https://www.clien.net/service/search/board/"+new_url.split("board/")[1]
+
+                if login_session is not None:
+                    page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
+                else:
+                    page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
+                
+                list_article = page_data.findAll("div", {"class": "list_item symph_row"})
+                for item in list_article:
+                    title = item.findAll("span")[2].text
+                    try:
+                        comment_no = item.findAll("span",{"class":"rSymph05"})[1].text
+                    except:
+                        comment_no = ""                    
+                    hits = item.findAll("div")[3].span.text
+                    link = item.find("a",{"class":"list_subject"})['href']
+                    author = item['data-author-id'].strip()
+                    timestamp = item.find("div",{"class":"list_time"}).span.span.text
+                    data.append((title,author,link,hits,timestamp,comment_no))
+
+        else:
+            for page in (page*2,page*2+1):
+                new_url = url+str(page)
+                if keyword is not None:
+                    new_url+="&sk=title&sv="+keyword
+                    new_url="https://www.clien.net/service/search/board/"+new_url.split("board/")[1]
                 if login_session is not None:
                     page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
                 else:
@@ -632,30 +741,17 @@ def get_list(bbs="m",page=0, keyword=None):
                 list_article = page_data.findAll("div", {"class": "list_item symph_row"})
                 for item in list_article:
                     
-                    title = item.findAll("span")[2].text
-                    comment_no = item.findAll("span")[1].text
-                    hits = item.findAll("div")[3].span.text
-                    link = item.find("a",{"class":"list_subject"})['href']
-                    author = item['data-author-id'].strip()
-                    timestamp = item.find("div",{"class":"list_time"}).span.span.text
-                    data.append((title,author,link,hits,timestamp,comment_no))
-
-        if bbs == "t" or bbs == "j" or bbs == "u" or bbs =="b" or bbs == "a":
-            for page in (page*2,page*2+1):
-                new_url = url+str(page)
-                if keyword is not None:
-                    new_url+="&sk=title&sv="+keyword
-                if login_session is not None:
-                    page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
-                else:
-                    page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
-                list_article = page_data.findAll("div", {"class": "list_item symph_row"})
-                for item in list_article:
                     try:
-                        category = item.find("div",{"class":"list_title"}).findAll("span")[0].text.strip()
+                        spans = item.find("div",{"class":"list_title"}).findAll("span")
+                        for span in spans:
+                            try:
+                                span['class']
+                            except:
+                                title = span.text
+                        
                     except:
-                        category = ""
-                    title = item.find("div",{"class":"list_title"}).findAll("span")[1].text.strip()
+                        title="PARSE ERROR"
+                    
                     try:
                         comment_no = item.find("span",{"class":"rSymph05"}).text
                     except:
@@ -708,6 +804,8 @@ def padding_str(text,len):
     return text
 
 def cmd_line():
+    global read_log
+    global path
     global login_session
     global bbs
     global bbs_title
@@ -719,16 +817,16 @@ def cmd_line():
     while True:
         
         show_top_menu()
-        cmd_list="(q) 종료하기 >> "
+        cmd_list="(\q) 종료하기 >> "
 
         if len(article_data)==0:
             cmd = input(cmd_list)
             bbs = cmd.strip()
             
-            if cmd.strip()=="c":
-                chat_client()
+            #if cmd.strip()=="cc":
+            #    chat_client()
 
-            if cmd.strip()=="m":
+            if cmd.strip()=="f":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
@@ -740,7 +838,7 @@ def cmd_line():
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [새소식]"
 
-            if cmd.strip()=="t":
+            if cmd.strip()=="l":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
@@ -758,23 +856,32 @@ def cmd_line():
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [사용기]"
             
-            if cmd.strip()=="b":
+            if cmd.strip()=="s":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [회원 중고장터]"
             
-            if cmd.strip()=="a":
+            if cmd.strip()=="q":
                 page = 0
                 keyword = None
                 article_data = get_list(bbs=bbs,page=0,keyword=keyword)
                 bbs_title = "* [아무거나 질문]"
 
-            if cmd.strip()=="q":
+            if cmd.strip()=="t":
+                page = 0
+                keyword = None
+                article_data = get_list(bbs=bbs,page=0,keyword=keyword)
+                bbs_title = "* [유용한 사이트]"
+
+            if cmd.strip()=="\q":
+                print("안녕히 가십시오")
+                with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
+                    pickle.dump(read_log, fout)
                 sys.exit()
-            if cmd.strip()=="c":
+            if cmd.strip()=="\c":
                 clear_screen()
-            if cmd.strip()=="l":
+            if cmd.strip()=="\l":
                 pass
                 #login_session = login()
         else:   
@@ -794,14 +901,18 @@ def cmd_line():
                     comment_no = padding_str(item[5],5)  
                 else:
                     comment_no = padding_str("["+item[5]+"]",5)  
-
-                print(str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
+                
+                try:
+                    read_log[author.strip()+"_"+item[4].strip()]
+                    print("  "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
+                except:
+                    print("* "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
                 idx+=1
                 if idx!=0 and idx%20==0:
                     break
 
             show_lower()
-            cmd_list="[PAGE:"+str(page*3+sub_page)+"] (글번호) 글 읽기 (n)새글 확인 (t) 상위 메뉴 (s) 검색 (w) 글 쓰기 (q) 종료 하기 (엔터) 다음 페이지 (b) 이전 페이지>> "
+            cmd_list="[PAGE:"+str(page*3+sub_page)+"] (글번호) 글 읽기 (n)새글 확인 (t) 상위 메뉴 (s) 검색 (w) 글 쓰기 (\q) 종료 하기 (엔터) 다음 페이지 (b) 이전 페이지>> "
             cmd = input(cmd_list)
             
             try:
@@ -839,6 +950,8 @@ def cmd_line():
                 article_data = get_list(bbs=bbs,page=page,keyword=keyword)
 
             if cmd.strip()=="t":
+                page = 0
+                sub_page = 0
                 article_data = []
             
             if cmd.strip()=="n":
@@ -861,10 +974,12 @@ def cmd_line():
                     page+=1
                     sub_page=0
                     article_data = get_list(bbs=bbs,page=page,keyword=keyword)
-            if cmd.strip()=="q":
+            if cmd.strip()=="\q":
                 print("")
                 print("안녕히 가십시오. ")
                 print("")
+                with open(os.path.join(path,'read_log.pkl'),'wb') as fout:
+                    pickle.dump(read_log, fout)
                 sys.exit()
             if cmd.strip()=="c":
                 clear_screen()
