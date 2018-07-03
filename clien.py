@@ -175,7 +175,7 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  VER 0.25
+  VER 0.30
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
   [보다 쾌적한 사용을 위해 터미널의 상하,좌우폭을 조절해주세요]
 __________________________________________________________________________________________________________________________________________
@@ -631,8 +631,9 @@ def get_list(bbs="m",page=0, keyword=None):
                 
                 list_article = page_data.findAll("div", {"class": "list_item symph_row"})
                 for item in list_article:
-                    title = item.findAll("span")[1].text
-                    comment_no = item.findAll("span")[2].text
+                    
+                    title = item.findAll("span")[2].text
+                    comment_no = item.findAll("span")[1].text
                     hits = item.findAll("div")[3].span.text
                     link = item.find("a",{"class":"list_subject"})['href']
                     author = item['data-author-id'].strip()
