@@ -105,13 +105,13 @@ def get_list(page=0, keyword=None):
 
 if __name__=="__main__":
     login_session = login()
-    for item in get_list(keyword=".jpg"):
+    for item in get_list(keyword="후기 jpg"):
         article_url = "http://clien.net"+item[2]
         article_data_soup = Soup(login_session.get(article_url,verify=cert_path).text, 'lxml')    
         imgs = article_data_soup.find("div", {"class": "post_content"}).findAll("img")
         idx = 0
         for img in imgs:
-            print idx, img["src"], "downloading .."
+            print(idx, img["src"], "downloading ..")
             urllib.request.urlretrieve(img['src'], "downloaded/"+img['src'].split("/")[-1].split("?")[0])
             time.sleep(3)
             idx+=1
