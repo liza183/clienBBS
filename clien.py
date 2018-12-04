@@ -202,7 +202,7 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  (VER 0.51 8/3/2018)
+  (VER 0.55 12/4/2018)
 
   [공지] OSX의 QuickLook 사용이 편리하도록 첨부된 사진,영상의 링크를 글에 표시하였습니다.
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
@@ -715,7 +715,10 @@ def get_list(bbs="f",page=0, keyword=None):
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 
-                list_article = page_data.findAll("div", {"class": "list_item symph_row"})
+                
+                list_article = page_data.findAll("div", {"class": "list_item symph_row "})
+                #print(list_article)
+                #print(len(list_article))
                 for item in list_article:
                     title = item.findAll("span")[2].text
                     try:
@@ -739,8 +742,9 @@ def get_list(bbs="f",page=0, keyword=None):
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 
-                list_article = page_data.findAll("div", {"class": "list_item symph_row jirum"})
-                for item in page_data.findAll("div",{"class":"list_item symph_row jirum"}):
+                list_article = page_data.findAll("div", {"class": "list_item symph_row jirum "})
+                
+                for item in list_article:
                     title = item.findAll("div",{"class":"list_title"})[0].find("span").find("a").text
                     hits = item.findAll("div",{"class":"list_hit"})[0].find("span").text
                     link = item.findAll("div",{"class":"list_title"})[0].find("span").find("a")['href']
@@ -751,7 +755,37 @@ def get_list(bbs="f",page=0, keyword=None):
                     except:
                         comment_no = ""
                     data.append((title,author,link,hits,timestamp,comment_no))
+
+        elif bbs =="q" :
+            for page in (page*2,page*2+1):
+                new_url = url+str(page)
+                if keyword is not None:
+                    new_url+="&sk=title&sv="+keyword
+                    new_url="https://www.clien.net/service/search/board/"+new_url.split("board/")[1]
+                if login_session is not None:
+                    page_data = Soup(login_session.get(new_url, verify=cert_path).text, 'lxml')
+                else:
+                    page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
+                
+                list_article = page_data.findAll("div", {"class": "list_item symph_row kin "})
+                
+                title = ""
+                for item in list_article:
                     
+                    spans = item.find("div",{"class":"list_title"}).a.findAll("span")
+                    title = spans[1].text
+
+                    try:
+                        comment_no = item.find("span",{"class":"rSymph05"}).text
+                    except:
+                        comment_no = ""
+
+                    hits = item.findAll("div")[3].span.text
+                    link = item.find("a",{"class":"list_subject"})['href']
+                    author = item['data-author-id'].strip()
+                    timestamp = item.find("div",{"class":"list_time"}).span.span.text
+                    data.append((title,author,link,hits,timestamp,comment_no))
+
 
         else:
             for page in (page*2,page*2+1):
@@ -764,20 +798,14 @@ def get_list(bbs="f",page=0, keyword=None):
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 
-                list_article = page_data.findAll("div", {"class": "list_item symph_row"})
+                
+                list_article = page_data.findAll("div", {"class": "list_item symph_row "})
+                title = ""
                 for item in list_article:
                     
-                    try:
-                        spans = item.find("div",{"class":"list_title"}).findAll("span")
-                        for span in spans:
-                            try:
-                                span['class']
-                            except:
-                                title = span.text
-                        
-                    except:
-                        title="PARSE ERROR"
-                    
+                    spans = item.find("div",{"class":"list_title"}).a.findAll("span")
+                    title = spans[1].text
+
                     try:
                         comment_no = item.find("span",{"class":"rSymph05"}).text
                     except:
