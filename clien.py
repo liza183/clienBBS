@@ -202,7 +202,7 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  (VER 0.55 12/4/2018)
+  (VER 0.55 4/1/2020)
 
   [공지] OSX의 QuickLook 사용이 편리하도록 첨부된 사진,영상의 링크를 글에 표시하였습니다.
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
@@ -250,7 +250,6 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j     
 
-* 재미있게 사용하셨다면 유튜브 '이씨네 미국살이 (https://goo.gl/FbhCa7)' 를 방문해주세요.
 * 인스타그램 @papamattlee 를 팔로우해주세요
 
 열람하실 게시판을 선택해 주세요.
@@ -715,10 +714,9 @@ def get_list(bbs="f",page=0, keyword=None):
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 
+                #print(page_data)
                 
-                list_article = page_data.findAll("div", {"class": "list_item symph_row "})
-                #print(list_article)
-                #print(len(list_article))
+                list_article = page_data.findAll("div", {"data-role": "list-row"})
                 for item in list_article:
                     title = item.findAll("span")[2].text
                     try:
@@ -833,18 +831,15 @@ def login():
             
         user_info = set_csrf(main_page, user_info)
         login_req = s.post(login_url, data=user_info)
-        
         if login_req.status_code != 200:
             print ('로그인이 되지 않았어요! 아이디와 비밀번호를 다시한번 확인해 주세요.')
         else:
             page_data = Soup(s.get(base_url).text, 'lxml')
-            if "나의글"in page_data.text:
+            if "로그인하기" not in s.get(base_url).text:
                 print ('로그인에 성공 하였습니다.')
-                logged_in_user = user_info['userId']
+                logged_in_user = username
                 return s
-            else:
-                print ('로그인이 되지 않았어요! 아이디와 비밀번호를 다시한번 확인해 주세요.')
-
+    
     print("로그인을 할수 없습니다. ")
     return None
 
@@ -958,9 +953,11 @@ def cmd_line():
                 
                 try:
                     read_log[author.strip()+"_"+item[4].strip()]
-                    print("  "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
+                    row_line = "  "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits
+                    print("  "+row_line.strip())
                 except:
-                    print("* "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits)
+                    row_line = "* "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits
+                    print(row_line.strip())
                 idx+=1
                 if idx!=0 and idx%20==0:
                     break

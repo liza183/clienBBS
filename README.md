@@ -1,4 +1,4 @@
-# clienBBS ver 0.51
+# clienBBS ver 1.00
 
 ## 알림
 
