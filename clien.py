@@ -202,7 +202,7 @@ l_j  l_jY    _]|    / |  \_/  | |  | |  |  ||     || l___
   |  |  |     T|  .  Y|   |   | j  l |  |  ||  |  ||     |                   
   l__j  l_____jl__j\_jl___j___j|____jl__j__jl__j__jl_____j   (clienBBS)  
 
-  (VER 0.55 4/1/2020)
+  (VER 1.00 4/1/2020)
 
   [공지] OSX의 QuickLook 사용이 편리하도록 첨부된 사진,영상의 링크를 글에 표시하였습니다.
   버그 알림 및 문의는 Matt Lee (johnleespapa@gmail.com, 인스타그램 @papamattlee)
