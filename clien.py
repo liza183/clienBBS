@@ -334,24 +334,28 @@ def reply(bbs_title, article_num, article_data, sub_page):
                 return
             else:
                 lines.append(line)
-        lines.append("<br> - clienBBS 로 작성한 댓글입니다.")
+        lines.append("\\n - clienBBS 로 작성한 댓글입니다.")
         content = ""
         for line in lines:
             if line.strip()=="":
-                line="<br>"
-            content+="<p>"+line+"</p>"
+                line=""
+            content+="\\n"+line+""
 
         headers = {'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         
         data = {
                     'boardSn': article_id.split("/")[-1],
-                    'param': "{\"comment\":\"<p>"+content+"</p>\",\"images\":[]}"
+                    'param': "{\"comment\":\""+content+"\",\"images\":[], \"articleRegister\":\""+logged_in_user+"\"}"
                 }
+        print(data)
         main_page = login_session.get(article_url)
         data = set_csrf(main_page, data)
         headers['X-CSRF-TOKEN'] = data['_csrf']
         data = json.loads(json.dumps(data))
         regist_req = login_session.post(comment_url, data=data)
+        print(regist_req)
+        print(regist_req.text)
+        print(regist_req.status_code)
         if regist_req.status_code != 200:
             print ('댓글이 달리지 않았습니다.')
         else:
@@ -740,7 +744,7 @@ def get_list(bbs="f",page=0, keyword=None):
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 
-                list_article = page_data.findAll("div", {"class": "list_item symph_row jirum "})
+                list_article = page_data.findAll("div", {"data-role": "list-row"})
                 
                 for item in list_article:
                     title = item.findAll("div",{"class":"list_title"})[0].find("span").find("a").text
@@ -765,7 +769,7 @@ def get_list(bbs="f",page=0, keyword=None):
                 else:
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 
-                list_article = page_data.findAll("div", {"class": "list_item symph_row kin "})
+                list_article = page_data.findAll("div", {"data-role": "list-row"})
                 
                 title = ""
                 for item in list_article:
@@ -797,7 +801,7 @@ def get_list(bbs="f",page=0, keyword=None):
                     page_data = Soup(requests.get(new_url, verify=cert_path).text, 'lxml')
                 
                 
-                list_article = page_data.findAll("div", {"class": "list_item symph_row "})
+                list_article = page_data.findAll("div", {"data-role": "list-row"})
                 title = ""
                 for item in list_article:
                     

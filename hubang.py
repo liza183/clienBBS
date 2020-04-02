@@ -103,11 +103,12 @@ def get_list(page_max=0):
             
             for item in list_article:
                 title = item.findAll("span")[2].text
-            #    print(title)
+            
                 try:
                     comment_no = item.findAll("span",{"class":"rSymph05"})[0].text
                 except:
                     comment_no = ""                    
+            
                 hits = item.findAll("div")[3].span.text
                 link = item.find("a",{"class":"list_subject"})['href']
                 author = item['data-author-id'].strip()
@@ -126,16 +127,15 @@ if __name__=="__main__":
 
     for item in item_list:
 
-        article_url = "http://clien.net"+item[2]
-        article_data_soup = Soup(login_session.get(article_url,verify=cert_path).text, 'lxml')    
-        imgs = article_data_soup.find("div", {"class": "post_content"}).findAll("img")
-        idx = 0
-        for img in imgs:
-            print(idx, img["src"], "downloading ..")
-            try:
+        try:
+            article_url = "http://clien.net"+item[2]
+            article_data_soup = Soup(login_session.get(article_url,verify=cert_path).text, 'lxml')    
+            imgs = article_data_soup.find("div", {"class": "post_content"}).findAll("img")
+            idx = 0
+            for img in imgs:
+                print(idx, img["src"], "downloading ..")
                 urllib.request.urlretrieve(img['src'], "downloaded/"+img['src'].split("/")[-1].split("?")[0])
-            except:
-                print("Error occurred with ", img['src'])
-                pass
-            time.sleep(3)
-            idx+=1
+                time.sleep(3)
+                idx+=1
+        except:
+            print("Some error occurred while processing", item)
