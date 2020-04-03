@@ -21,4 +21,4 @@ setuptools == 36.5.0.post20170921
 
 # clienBBS/clien.py: 2
 # clienBBS/hubang.py: 2
-urllib3 == 1.24.1
+urllib3 == 1.24.2
