@@ -957,10 +957,10 @@ def cmd_line():
                 
                 try:
                     read_log[author.strip()+"_"+item[4].strip()]
-                    row_line = "  "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits
+                    row_line = "  "+str(idx).strip()+"\t"+title.strip()+" "+str(comment_no).strip()+"\t by "+author.strip()+"\t"+timestamp.strip()+"\t"+hits.strip()
                     print("  "+row_line.strip())
                 except:
-                    row_line = "* "+str(idx)+"\t"+title+" "+str(comment_no)+"\t by "+author+"\t"+timestamp+"\t"+hits
+                    row_line = "* "+str(idx).strip()+"\t"+title.strip()+" "+str(comment_no).strip()+"\t by "+author.strip()+"\t"+timestamp.strip()+"\t"+hits.strip()
                     print(row_line.strip())
                 idx+=1
                 if idx!=0 and idx%20==0:
