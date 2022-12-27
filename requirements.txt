@@ -17,7 +17,7 @@ certifi == 2018.10.15
 requests == 2.20.1
 
 # clienBBS/setup.py: 1
-setuptools == 36.5.0.post20170921
+setuptools == 65.5.1
 
 # clienBBS/clien.py: 2
 # clienBBS/hubang.py: 2
