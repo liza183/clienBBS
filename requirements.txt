@@ -14,7 +14,7 @@ certifi == 2022.12.7
 
 # clienBBS/clien.py: 4,22
 # clienBBS/hubang.py: 4,17
-requests == 2.20.1
+requests == 2.31.0
 
 # clienBBS/setup.py: 1
 setuptools == 65.5.1
