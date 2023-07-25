@@ -10,7 +10,7 @@ beautifulsoup4 == 4.6.3
 
 # clienBBS/clien.py: 25
 # clienBBS/hubang.py: 20
-certifi == 2022.12.7
+certifi == 2023.7.22
 
 # clienBBS/clien.py: 4,22
 # clienBBS/hubang.py: 4,17
